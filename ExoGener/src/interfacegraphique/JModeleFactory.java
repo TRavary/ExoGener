@@ -54,15 +54,11 @@ public class JModeleFactory extends JPanel {
 	
 	public void init(){
 		setLayout(null);
-	    GenererStandardListener GSL = new GenererStandardListener();
-	    itemGenererStandard.addActionListener(GSL);
-	    GenererLatexListener GLL = new GenererLatexListener();
-	    itemGenererLatex.addActionListener(GLL);
-	    
-	    
-	    MouseListener PL = new PopupListener();
+	    itemGenererStandard.addActionListener(new GenererStandardListener());
+	    itemGenererLatex.addActionListener(new GenererLatexListener());
+	
 	    popupModeleFactory.add(createMenuCreer());
-	    addMouseListener(PL);
+	    addMouseListener(new PopupListener());
 	}
 	
 	public JMenu createMenuCreer(){
@@ -91,14 +87,16 @@ public class JModeleFactory extends JPanel {
 		return menu;
 	}
 	
-	public void select(int idModele,int variable){
-		if(variableSelect == -1){
-			variableSelect = variable;
-		}
-		else{
+	public void selectModele(int idModele){
+		if(variableSelect != -1){
 			modelePrincipal.creerLien(variableSelect, idModele);
 			variableSelect = -1;
+			repaint();
 		}
+	}
+	
+	public void selectVariable(int variable){
+		variableSelect = variable;
 		repaint();
 	}
 	
@@ -106,13 +104,12 @@ public class JModeleFactory extends JPanel {
 	{
 		modelePrincipal.addModele(nouveauModele);
 		int idNouveauModele = modelePrincipal.getLastIdModele();
-		JModele modele = new JModele(idNouveauModele);
+		JModele modele = new JModele();
 		this.add(modele);
         jmodeles.add(modele);
-        jmodeles.get(idNouveauModele).init(popupX,popupY);
+        modele.init(idNouveauModele,popupX,popupY);
         popupX = 10;
-        popupY = 10;
-        
+        popupY = 10;   
 	}
 	
 	public void paintComponent(Graphics g){
@@ -172,11 +169,13 @@ public class JModeleFactory extends JPanel {
 	
 	class PopupListener extends MouseAdapter {
 	    public void mousePressed(MouseEvent e) {
+	    	variableSelect = -1;
+	        repaint();
 	        maybeShowPopup(e);
 	    }
 
 	    public void mouseReleased(MouseEvent e) {
-	        maybeShowPopup(e);
+	    	maybeShowPopup(e);
 	    }
 
 	    private void maybeShowPopup(MouseEvent e) {
@@ -186,7 +185,6 @@ public class JModeleFactory extends JPanel {
 
 	        	popupModeleFactory.show(e.getComponent(),
 	                       e.getX(), e.getY());
-	            
 	        }
 	    }
 	}

@@ -59,7 +59,7 @@ public class MArbre extends Modele {
 		for(int i=0;i<nouveauModele.variablesLibres.size();i++)
 		{
 			int newVar = nouveauModele.variablesLibres.get(i)+decalage;
-			nouveauModele.modifieVariable(i,newVar);
+			nouveauModele.changeVariable(i,newVar);
 			variablesLibres.add(newVar);
 		}
 		modeles.add(nouveauModele);

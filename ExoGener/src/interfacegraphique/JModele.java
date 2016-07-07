@@ -1,11 +1,16 @@
 package interfacegraphique;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JPanel;
@@ -18,17 +23,44 @@ import expression.modele.Modele;
 @SuppressWarnings("serial")
 public class JModele extends JPanel {
 	int idModele;
-	JLabel label;
+	JLabel label = new JLabel();
 	int dX;
 	int dY;
-	int hVariable;
 	boolean activeSelection = false;
+	
+	JPanel panelVariables = new JPanel();
+	ArrayList<JVariable> jvariables = new ArrayList<>();
 	
 	JPopupMenu popup = new JPopupMenu();
 	
-	public JModele(int idModele){
+	public void init(int idModele,int x,int y){
 		this.idModele = idModele;
-		setLayout(null);
+		this.setSize(90,60);
+		
+		setLayout(new BorderLayout());
+		this.add(label,BorderLayout.CENTER);
+		panelVariables.setLayout(new GridLayout());
+		this.add(panelVariables,BorderLayout.PAGE_END);
+		
+		setBorder(BorderFactory.createLineBorder(Color.black));
+		this.setLocation(x, y);
+		this.setVisible(true);
+		
+		label.setText(getModele().getNom().concat(String.valueOf(idModele)));
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		this.add(label);
+		
+		int nbVar = getModele().getNbVariablesLibres();
+		if(nbVar !=0){
+			for(int idVar = 0;idVar<nbVar;idVar++){
+				JVariable jvar = new JVariable();
+				jvariables.add(jvar);
+				panelVariables.add(jvar);
+				jvar.init(idVar,idModele);
+			}
+		}
+		addMouseListener(new clicListener());
+		addMouseMotionListener(new deplacementListener());
 	}
 	
 	public JMenu createModifierMenu(){
@@ -53,62 +85,7 @@ public class JModele extends JPanel {
 		return ancre;
 	}
 	
-	public void init(int x,int y){
-		this.setSize(90,60);
-		this.setLocation(x, y);
-		this.setVisible(true);
-		hVariable = 60;
-		label = new JLabel();
-		label.setSize(80, 40);
-		label.setLocation(5, 5);
-		
-		label.setText(getModele().getNom().concat(String.valueOf(idModele)));
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		this.add(label);
-		
-		addMouseListener(new MouseAdapter()
-        {
-            @Override public void mousePressed(MouseEvent e) {	
-                if(SwingUtilities.isLeftMouseButton(e)){
-                	Point p = e.getLocationOnScreen();
-                	dX = getX()-p.x;
-					dY = getY()-p.y;
-					
-					activeSelection = true;
-					
-				}
-		    }
- 
-            @Override public void mouseReleased(MouseEvent e){
-                
-                if(activeSelection){
-                	int variableSelect = -1;
-                	if(getModele().getNbVariablesLibres()>0){
-                		if(e.getY()>hVariable){
-		            		int idVar = e.getX()*getModele().getNbVariablesLibres()/getWidth();
-		            		variableSelect = getModele().getVariableLibre(idVar);
-		            	}
-                	}
-                	((JModeleFactory)getParent()).select(idModele, variableSelect);
-                	
-                }
-            }           
-        });
- 
-        addMouseMotionListener(new MouseMotionAdapter()
-        {                     
-            @Override public void mouseDragged(MouseEvent e){
-                Point p = new Point(e.getLocationOnScreen());
-                setLocation(
-                		Integer.min(Integer.max(0,p.x+dX),getParent().getWidth()-getWidth()),
-                		Integer.min(Integer.max(0,p.y+dY),getParent().getHeight()-getHeight())
-                		);
-                
-                activeSelection = false;
-                getParent().repaint();
-            }	
-        });
-	}
+	
 	
 	public Modele getModele(){
 		JModeleFactory parent = (JModeleFactory) getParent();
@@ -119,8 +96,10 @@ public class JModele extends JPanel {
 	{		
 		super.paintComponent(g);
 		this.setSize(90,60);
-		label.setSize(80, 40);
+		//label.setSize(80, 40);
 		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		/*
 		int h = getHeight()-1;
 		int w = getWidth()-1;
 		hVariable = 3*h/4;
@@ -148,9 +127,47 @@ public class JModele extends JPanel {
 				}
 			}
 		}
+		*/
 	}
 	
-	class PopupListener extends MouseAdapter {
+	
+	class clicListener extends MouseAdapter{
+		@Override 
+		public void mousePressed(MouseEvent e) {
+            if(SwingUtilities.isLeftMouseButton(e)){
+            	Point p = e.getLocationOnScreen();
+            	dX = getX()-p.x;
+				dY = getY()-p.y;
+				
+				activeSelection = true;
+				
+			}
+	    }
+
+        @Override
+        public void mouseReleased(MouseEvent e){
+            if(activeSelection){
+            	((JModeleFactory)getParent()).selectModele(idModele);
+            }
+        }           
+	}    
+	
+	class deplacementListener extends MouseAdapter{
+        @Override
+        public void mouseDragged(MouseEvent e){
+            Point p = new Point(e.getLocationOnScreen());
+            setLocation(
+            		Integer.min(Integer.max(0,p.x+dX),getParent().getWidth()-getWidth()),
+            		Integer.min(Integer.max(0,p.y+dY),getParent().getHeight()-getHeight())
+            		);
+            
+            activeSelection = false;
+            getParent().repaint();
+        }	
+	}
+	
+	
+	class PopupListener extends MouseMotionAdapter {
 	    public void mousePressed(MouseEvent e) {
 	        maybeShowPopup(e);
 	    }

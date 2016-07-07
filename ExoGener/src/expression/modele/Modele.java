@@ -16,7 +16,7 @@ abstract public class Modele {
 		return "Inconnu";
 	}
 	
-	public void modifieVariable(int indice, int nouvelleVariable){
+	public void changeVariable(int indice, int nouvelleVariable){
 		variablesLibres.set(indice, nouvelleVariable);
 	}
 	
