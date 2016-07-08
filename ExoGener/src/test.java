@@ -5,7 +5,6 @@ import expression.Produit;
 public class test {
 	
 	public test(){
-		// TEST Synchronisation github
 		
 	}
 	

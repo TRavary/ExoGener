@@ -15,6 +15,8 @@ public class MEntier extends Modele {
 		this.max = max;
 		this.avecZero = avecZero;
 		this.variablesLibres = new ArrayList<>();
+		this.nbVarModifiable=false;
+		this.minVariables=0;
 	}
 	
 	

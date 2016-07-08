@@ -9,14 +9,14 @@ abstract public class Modele {
 	
 	
 	ArrayList<Integer> variablesLibres;
-	int minVariables;
-	boolean nbVarModifiable;
+	public int minVariables=0;
+	public boolean nbVarModifiable=false;
 
 	public String getNom(){
 		return "Inconnu";
 	}
 	
-	public void modifieVariable(int indice, int nouvelleVariable){
+	public void changeVariable(int indice, int nouvelleVariable){
 		variablesLibres.set(indice, nouvelleVariable);
 	}
 	
@@ -33,8 +33,10 @@ abstract public class Modele {
 		variablesLibres.add(nouvelleVariable);
 	}
 	
-	public void deleteVariable(){
+	public int supprVariable(){
+		int variableSupprimee = variablesLibres.get(getNbVariablesLibres()-1);
 		variablesLibres.remove(variablesLibres.size()-1);
+		return variableSupprimee;
 	}
 
 }

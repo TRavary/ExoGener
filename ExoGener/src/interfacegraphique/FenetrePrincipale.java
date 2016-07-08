@@ -34,9 +34,7 @@ public class FenetrePrincipale extends JFrame {
 
 	    
 	    modeleFactory.init();
-	    
-	    
-	    
+
 	    this.setVisible(true);
  
 	}
