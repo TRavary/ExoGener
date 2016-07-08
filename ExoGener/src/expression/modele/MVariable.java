@@ -11,6 +11,8 @@ public class MVariable extends Modele{
 	public MVariable(String nomVariable){
 		this.nomVariable = nomVariable;
 		this.variablesLibres = new ArrayList<>();
+		this.nbVarModifiable=false;
+		this.minVariables=0;
 	}
 	
 	public String getNom(){

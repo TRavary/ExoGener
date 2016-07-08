@@ -7,23 +7,33 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import expression.Expression;
+import expression.Variable;
 import expression.VariableLibre;
 import outils.Pair;
 
 public class MArbre extends Modele {
 	
-	ArrayList<Modele> modeles;
+	HashMap<Integer,Modele> id2modele;
 	HashMap<Integer,Integer> variable2idModele;
-	int idRacine;
+	public int idRacine = -1;
+	int lastIdModele = -1;
 	
 	public MArbre(){
 		variablesLibres = new ArrayList<>();
-		modeles = new ArrayList<>();
+		id2modele = new HashMap<>();
 		variable2idModele = new HashMap<>();
-		idRacine = 0;
+		this.nbVarModifiable=false;
+		this.minVariables=0;
+	}
+	
+	public void setRacine(int idModele){
+		idRacine = idModele;
 	}
 	
 	
+	public int getLastIdModele(){
+		return lastIdModele;
+	}
 	public int getNewVariable(){
 		int newVariable = 0;
 		while(variablesLibres.contains(Integer.valueOf(newVariable)))
@@ -32,17 +42,90 @@ public class MArbre extends Modele {
 		}
 		return newVariable;
 	}
+	public int getNewIdModele(){
+		int id = 0;
+		while(id2modele.containsKey(id)){id++;}
+		return id;
+	}
+	public int getVariableLinkedTo(int idModele){
+		Iterator<Integer> iter= variable2idModele.keySet().iterator();
+		while(iter.hasNext()){
+			int variable = iter.next();
+			if(variable2idModele.get(variable)==idModele){
+				return variable;
+			}
+		}
+		return -1;
+	}
+	public Modele getModele(int idModele){
+		return id2modele.get(idModele);
+	}
+	public ArrayList<Integer> getVariablesLibres(){
+		return variablesLibres;
+	}
 	
 	
 	
 	public void addVariableTo(int idModele)
 	{
 		int newVariable = getNewVariable();
-		modeles.get(idModele).addVariable(newVariable);
+		id2modele.get(idModele).addVariable(newVariable);
 		variablesLibres.add(newVariable);
 	}
-	
+	public void supprVariableTo(int idModele)
+	{
+		int variable = id2modele.get(idModele).supprVariable();
+		
+		boolean noMore = true;
+		Iterator<Integer> iter=id2modele.keySet().iterator();
+		while(iter.hasNext())
+		{
+			int i = iter.next();
+			Modele m = id2modele.get(i);
+			for(int j=0;j<m.getNbVariablesLibres();j++){
+				if(m.getVariableLibre(j)==variable){
+					noMore = false;
+				}
+			}
+		}
+		
+		if(noMore){
+			variablesLibres.remove(variablesLibres.indexOf(variable));
+		}
+	}
+	public void changeVariable(int idModele,int idVar, int variable){
+		int ancienneVariable = id2modele.get(idModele).getVariableLibre(idVar);
+		id2modele.get(idModele).changeVariable(idVar, variable);
+		
+		// Verification de la suppression de la derniere occurence de l'ancienne variable
+		boolean noMore = true;
+		Iterator<Integer> iter=id2modele.keySet().iterator();
+		while(iter.hasNext())
+		{
+			int i = iter.next();
+			Modele m = id2modele.get(i);
+			for(int j=0;j<m.getNbVariablesLibres();j++){
+				if(m.getVariableLibre(j)==ancienneVariable){
+					noMore = false;
+				}
+			}
+		}
+		
+		// Suppression du lien de l'ancienne si c'était la derniere
+		// Suppression de l'ancienne de variablesLibres si c'était la derniere
+		if(noMore){
+			variable2idModele.remove(ancienneVariable);
+			variablesLibres.remove(variablesLibres.indexOf(ancienneVariable));
+		}
+		
+		// Ajout de la nouvelle dans variablesLibres
+		if(!variablesLibres.contains(variable)){
+			variablesLibres.add(variable);
+		}
+		
+	}
 	public void addModele(Modele nouveauModele){
+		
 		int minModele = 0;
 		int maxModele = 0;
 		if(nouveauModele.variablesLibres.size() != 0){
@@ -62,26 +145,51 @@ public class MArbre extends Modele {
 			nouveauModele.changeVariable(i,newVar);
 			variablesLibres.add(newVar);
 		}
-		modeles.add(nouveauModele);
+		
+		if(id2modele.size()==0){
+			setRacine(0);
+		}
+		lastIdModele = getNewIdModele();
+		id2modele.put(lastIdModele,nouveauModele);
+	}
+	public void supprModele(int idModele) {
+		id2modele.remove(idModele);
+		int variable = getVariableLinkedTo(idModele);
+		if(variable != -1){variable2idModele.remove(variable);}
+		
+		if(idModele == idRacine){
+			if(id2modele.size() ==0){idRacine=-1;}
+			else{idRacine = id2modele.keySet().iterator().next();}
+		}
 	}
 	
 	
-	public void creerLien(int variable,int idModele)
+	public void addLien(int variable,int idModele)
 	{
 		variable2idModele.put(variable, idModele);
 	}
-	
-	public void supprimerLien(int variable)
+	public void supprLien(int variable)
 	{
 		variable2idModele.remove(variable);
 	}
+	public boolean isLien(int variable){
+		return variable2idModele.containsKey(variable);
+	}
+	public int getIdLien(int variable){
+		if(isLien(variable)){
+			return variable2idModele.get(variable);
+		}
+		return -1;
+	}
+	
 	
 	@Override
 	public Expression genererExpression() {
+		if(id2modele.size() == 0){return new Variable("ExpressionVide");}
 		HashMap<Integer,Expression> variable2Expression = new HashMap<>();
 		Stack<Integer> pile = new Stack<>();
 		
-		Expression racine = modeles.get(idRacine).genererExpression();
+		Expression racine = id2modele.get(idRacine).genererExpression();
 		int var = racine.getNextVariableLibre(-1);
 		while(var>=0)
 		{
@@ -96,7 +204,7 @@ public class MArbre extends Modele {
 		{
 			int curVar = pile.pop();
 			if(!variable2Expression.containsKey(curVar)){
-				Expression curExpression = modeles.get(variable2idModele.get(curVar)).genererExpression();
+				Expression curExpression = id2modele.get(variable2idModele.get(curVar)).genererExpression();
 				variable2Expression.put(curVar, curExpression);
 				pile.push(curVar);
 				var = curExpression.getNextVariableLibre(-1);
@@ -137,20 +245,21 @@ public class MArbre extends Modele {
 		
 		return racine.Remplacer(liste);
 	}
-
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("MArbre(\n");
-		for(int i=0;i<modeles.size();i++)
+		Iterator<Integer> iter=id2modele.keySet().iterator();
+		while(iter.hasNext())
 		{
+			int i = iter.next();
 			result.append(i);
 			result.append(":");
-			result.append(modeles.get(i).toString());
+			result.append(id2modele.get(i).toString());
 			result.append("\n");
 		}
 		
-		Iterator<Integer> iter=variable2idModele.keySet().iterator();
+		iter=variable2idModele.keySet().iterator();
 		while(iter.hasNext())
 		{
 			int i = iter.next();

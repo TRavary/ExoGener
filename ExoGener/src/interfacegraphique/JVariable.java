@@ -2,13 +2,10 @@ package interfacegraphique;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -40,20 +37,6 @@ public class JVariable extends JLabel {
 		addMouseListener(new ClicListener());
 		addMouseListener(new PopupListener());
 	}
-	
-	
-	public JModeleFactory getModeleFactory(){
-		return (JModeleFactory)SwingUtilities.getAncestorOfClass(JModeleFactory.class, this);
-	}
-	
-	public Modele getModele(){
-		return getModeleFactory().modelePrincipal.getModele(idModele);
-	}
-
-	public int getVariable(){
-		return getModele().getVariableLibre(id);
-	}
-	
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
 		this.setText(String.valueOf(getVariable()));
@@ -63,29 +46,21 @@ public class JVariable extends JLabel {
 		}
 	}
 	
+	
+	public JModeleFactory getModeleFactory(){
+		return (JModeleFactory)SwingUtilities.getAncestorOfClass(JModeleFactory.class, this);
+	}
+	public Modele getModele(){
+		return getModeleFactory().modelePrincipal.getModele(idModele);
+	}
+	public int getVariable(){
+		return getModele().getVariableLibre(id);
+	}
+	
+	
 	public String getItemName(int variable){
 		return "-> ".concat(String.valueOf(variable));
-	}
-	
-	class ClicListener extends MouseAdapter{
-		@Override 
-		public void mousePressed(MouseEvent e) {
-            if(SwingUtilities.isLeftMouseButton(e)){
-            	activeSelection = true;
-			}
-	    }
-
-        @Override
-        public void mouseReleased(MouseEvent e){
-            if(activeSelection){
-            	((JModeleFactory)getModeleFactory()).selectVariable(getVariable());
-            	
-            }
-            activeSelection = false;
-        }           
-	}
-	
-	
+	}	
 	private JPopupMenu createPopup(){
 		JPopupMenu popup = new JPopupMenu();
 		ArrayList<Integer> variablesLibres = getModeleFactory().modelePrincipal.getVariablesLibres();
@@ -105,7 +80,6 @@ public class JVariable extends JLabel {
 		
 		return popup;
 	}
-	
 	class PopupListener extends MouseAdapter {
 	    public void mousePressed(MouseEvent e) {
 	        maybeShowPopup(e);
@@ -123,27 +97,40 @@ public class JVariable extends JLabel {
 	        }
 	    }
 	}
-	
+	class ClicListener extends MouseAdapter{
+		@Override 
+		public void mousePressed(MouseEvent e) {
+            if(SwingUtilities.isLeftMouseButton(e)){
+            	activeSelection = true;
+			}
+	    }
+
+        @Override
+        public void mouseReleased(MouseEvent e){
+            if(activeSelection){
+            	((JModeleFactory)getModeleFactory()).selectVariable(getVariable());
+            	
+            }
+            activeSelection = false;
+        }           
+	}
 	class ChangeVariableListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 	    	String item = ((JMenuItem)e.getSource()).getText();
 	    	if(item.equals(itemNewVariable)){
-	    		getModeleFactory().modelePrincipal.changeVariable(idModele, id, getModeleFactory().modelePrincipal.getNewVariable());
+	    		getModeleFactory().changeVariable(idModele, id, getModeleFactory().modelePrincipal.getNewVariable());
 	    	}
 	    	else{
-	    		System.out.println(item);
 	    		ArrayList<Integer> variablesLibres = getModeleFactory().modelePrincipal.getVariablesLibres();
 	    		
 	    		for(int i =0;i<variablesLibres.size();i++){
 	    			int variable = variablesLibres.get(i);
 	    			if(getItemName(variable).equals(item)){
-	    				getModeleFactory().modelePrincipal.changeVariable(idModele, id, variable);
+	    				getModeleFactory().changeVariable(idModele, id, variable);
 	    			}
 	    		}
 	    	}
 	    	repaint();
-	    }    
-
+	    }
 	  }
-	
 }
