@@ -8,16 +8,24 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import expression.modele.MArbre;
 import expression.modele.MEntier;
+import expression.modele.MEntierAlea;
 import expression.modele.MListe;
 import expression.modele.MOppose;
 import expression.modele.MParenthese;
@@ -34,11 +42,13 @@ public class JModeleFactory extends JPanel {
 	
 	MArbre modelePrincipal = new MArbre();;
 	HashMap<Integer,JModele> id2jmodele = new HashMap<>();;
-	int variableSelect = -1;
+	int idModeleSelect = -1;
+	int numeroSelect = -1;
 
 
 	static String creerVariable = "Variable";
 	static String creerEntier = "Entier";
+	static String creerEntierAlea = "EntierAlea";
 	static String creerSomme = "Somme";
 	static String creerProduit = "Produit";
 	static String creerQuotient = "Quotient";
@@ -51,18 +61,97 @@ public class JModeleFactory extends JPanel {
 
 	JMenuItem itemGenererStandard = new JMenuItem("Generer Expression");
 	JMenuItem itemGenererLatex = new JMenuItem("Generer Latex");
+	JMenuItem itemAfficherLatex = new JMenuItem("Afficher arbre");
 
 	JPopupMenu popupModeleFactory = new JPopupMenu();
+	JMenuItem itemEnregistrer = new JMenuItem("Enregistrer");
+	JMenuItem itemCharger = new JMenuItem("Charger");
 	
 	int popupX = 10;
 	int popupY = 10;
 	
+	public void resetModelePrincipal(){
+		Iterator<Integer> iter = id2jmodele.keySet().iterator();
+		while(iter.hasNext())
+		{
+			int idModele = iter.next();
+			remove(id2jmodele.get(idModele));
+			id2jmodele.remove(idModele);
+			iter = id2jmodele.keySet().iterator();
+		}
+		modelePrincipal = new MArbre();
+		id2jmodele = new HashMap<>();
+		idModeleSelect = -1;
+		numeroSelect = -1;
+	}
+	
 	public void init(){
 		setLayout(null);
-	    itemGenererStandard.addActionListener(new GenererStandardListener());
+		itemGenererStandard.addActionListener(new GenererStandardListener());
 	    itemGenererLatex.addActionListener(new GenererLatexListener());
+	    itemAfficherLatex.addActionListener(new AfficherListener());
 	
 	    popupModeleFactory.add(createMenuCreer());
+	    
+	    itemEnregistrer.addActionListener(new ActionListener(){
+	    	public void actionPerformed(ActionEvent e) {
+				MArbre modele = modelePrincipal;
+				resetModelePrincipal();
+				ObjectOutputStream oos = null;
+
+				try {
+				  final FileOutputStream fichier = new FileOutputStream("test.mod");
+				  oos = new ObjectOutputStream(fichier);
+				  oos.writeObject(modele);
+				} catch (final java.io.IOException e1) {
+				  e1.printStackTrace();
+				} finally {
+				  try {
+				    if (oos != null) {
+				      oos.flush();
+				      oos.close();
+				    }
+				  } catch (final IOException ex) {
+				    ex.printStackTrace();
+				  }
+				}
+				
+				addModele(modele);
+				updateAllComponents();
+			}
+	    });
+	    
+	    
+	    itemCharger.addActionListener(new ActionListener(){
+	    	public void actionPerformed(ActionEvent e) {
+    		    ObjectInputStream ois = null;
+
+    		    try {
+			      final FileInputStream fichier = new FileInputStream("test.mod");
+			      ois = new ObjectInputStream(fichier);
+				  Modele modele = (Modele) ois.readObject(); 
+				  addModele(modele);
+    		    } catch (final java.io.IOException e1) {
+    		      e1.printStackTrace();
+    		    } catch (final ClassNotFoundException e1) {
+    		      e1.printStackTrace();
+    		    } finally {
+    		      try {
+    		        if (ois != null) {
+    		          ois.close();
+    		        }
+    		      } catch (final IOException ex) {
+    		        ex.printStackTrace();
+    		      }
+    		    }
+	    	 
+				updateAllComponents();
+			}
+	    });
+	    
+	    popupModeleFactory.add(itemEnregistrer);
+	    popupModeleFactory.add(itemCharger);
+	    
 	    addMouseListener(new PopupListener());
 	}
 	public void paintComponent(Graphics g){
@@ -73,11 +162,10 @@ public class JModeleFactory extends JPanel {
 		while(iterIdModele.hasNext()){
 			int idModele = iterIdModele.next();
 			Modele modele = modelePrincipal.getModele(idModele);
-			for(int idVar = 0;idVar<modele.getNbVariablesLibres();idVar++){
-				int variable = modele.getVariableLibre(idVar);
-				if(modelePrincipal.isLien(variable)){
-					int idLien = modelePrincipal.getIdLien(variable);
-					Point source = id2jmodele.get(idModele).getAncreVariable(idVar);
+			for(int p = 0;p<modele.getNbParametres();p++){
+				if(modelePrincipal.isLien(idModele,p)){
+					int idLien = modelePrincipal.getIdLien(idModele,p);
+					Point source = id2jmodele.get(idModele).getAncreParametre(p);
 					Point destination = id2jmodele.get(idLien).getAncre();
 					g2.draw(new Line2D.Double(source.x, source.y, destination.x, destination.y));
 				}
@@ -86,10 +174,128 @@ public class JModeleFactory extends JPanel {
 		g2.dispose() ;
 	}
 	
+	
+	
+	public void addModele(Modele nouveauModele)
+	{
+		modelePrincipal.addModele(nouveauModele);
+		int idNouveauModele = modelePrincipal.getLastIdModele();
+		JModele jmodele = new JModele();
+		this.add(jmodele);
+        id2jmodele.put(idNouveauModele, jmodele);
+        jmodele.init(idNouveauModele,popupX,popupY);
+        popupX = 10;
+        popupY = 10;   
+	}
+	
+	public void supprModele(int idModele){
+		modelePrincipal.supprModele(idModele);
+		remove(id2jmodele.get(idModele));
+		id2jmodele.remove(idModele);
+		updateAllComponents();
+	}
+	
+	
+	public void selectModele(int idModele){
+		if(numeroSelect != -1){
+			modelePrincipal.addLien(idModeleSelect, numeroSelect, idModele);
+			idModeleSelect = -1;
+			numeroSelect = -1;
+			updateAllComponents();
+		}
+	}
+	
+	
+	
+	public void selectParametre(int idModele,int numero){
+		idModeleSelect = idModele;
+		numeroSelect = numero;
+		updateAllComponents();
+	}
+	
+	public void updateAllComponents(){
+		Iterator<Integer> iterIdModele = id2jmodele.keySet().iterator();
+		while(iterIdModele.hasNext()){
+			int idModele = iterIdModele.next();
+			JModele jmodele = id2jmodele.get(idModele);
+			jmodele.update();
+		}
+		validate();
+		repaint();
+	}
+	
+	
+	public void addParametreTo(int idModele){
+		modelePrincipal.addParametreTo(idModele);
+		updateAllComponents();
+	}
+	
+	public void supprParametreTo(int idModele){
+		modelePrincipal.supprParametreTo(idModele);
+		updateAllComponents();
+	}
+	
+	public void FusionnerParametre(int idModele, int numeroModele, int nouveauNumero) {
+		modelePrincipal.FusionnerParametre(idModele, numeroModele, nouveauNumero);
+	}
+	
+	public void EchangerParametre(int idModele, int numeroModele, int nouveauNumero) {
+		modelePrincipal.EchangerParametre(idModele, numeroModele, nouveauNumero);
+	}
+	
+	public void DissocierParametre(int idModele,int numeroModele){
+		modelePrincipal.DissocierParametre(idModele,numeroModele);
+	}
+
+	
+	class GenererStandardListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			System.out.println(modelePrincipal.genererExpression().toString("Standard"));
+		}
+	}
+	class GenererLatexListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			System.out.println(modelePrincipal.genererExpression().toString("Latex"));
+		}
+	}
+	class AfficherListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			System.out.println(modelePrincipal.toString());
+		}
+	}
+	
+	
+	
+	class PopupListener extends MouseAdapter {
+	    public void mousePressed(MouseEvent e) {
+	    	idModeleSelect = -1;
+	    	numeroSelect = -1;
+	        repaint();
+	        maybeShowPopup(e);
+	    }
+
+	    public void mouseReleased(MouseEvent e) {
+	    	maybeShowPopup(e);
+	    }
+
+	    private void maybeShowPopup(MouseEvent e) {
+	        if (e.isPopupTrigger()) {
+	        	popupX = e.getX();
+	        	popupY = e.getY();
+
+	        	popupModeleFactory.show(e.getComponent(),
+	                       e.getX(), e.getY());
+	        }
+	    }
+	}
+	
+	
+	
 	public JMenu createMenuCreer(){
 		JMenu menu = new JMenu("Creer");
 
 		JMenuItem itemEntier = new JMenuItem(JModeleFactory.creerEntier);
+		JMenuItem itemEntierAlea = new JMenuItem(JModeleFactory.creerEntierAlea);
 		JMenuItem itemSomme = new JMenuItem(JModeleFactory.creerSomme);
 		JMenuItem itemProduit = new JMenuItem(JModeleFactory.creerProduit);
 		JMenuItem itemQuotient = new JMenuItem(JModeleFactory.creerQuotient);
@@ -103,6 +309,7 @@ public class JModeleFactory extends JPanel {
 		
 		CreerListener CL = new CreerListener();
 	    itemEntier.addActionListener(CL);
+	    itemEntierAlea.addActionListener(CL);
 	    itemSomme.addActionListener(CL);
 	    itemProduit.addActionListener(CL);
 	    itemQuotient.addActionListener(CL);
@@ -116,6 +323,7 @@ public class JModeleFactory extends JPanel {
 	    
 	    menu.add(itemVariable);
 	    menu.add(itemEntier);
+	    menu.add(itemEntierAlea);
 	    menu.add(itemSomme);
 	    menu.add(itemProduit);
 	    menu.add(itemQuotient);
@@ -128,59 +336,24 @@ public class JModeleFactory extends JPanel {
 		return menu;
 	}
 	
-	public void selectModele(int idModele){
-		if(variableSelect != -1){
-			if(modelePrincipal.getVariableLinkedTo(idModele) ==-1){
-				modelePrincipal.addLien(variableSelect, idModele);
-			}
-			variableSelect = -1;
-			repaint();
-		}
-	}
-	public void selectVariable(int variable){
-		variableSelect = variable;
-		repaint();
-	}
 	
-	public void addModele(Modele nouveauModele)
-	{
-		modelePrincipal.addModele(nouveauModele);
-		int idNouveauModele = modelePrincipal.getLastIdModele();
-		JModele jmodele = new JModele();
-		this.add(jmodele);
-        id2jmodele.put(idNouveauModele, jmodele);
-        jmodele.init(idNouveauModele,popupX,popupY);
-        popupX = 10;
-        popupY = 10;   
-	}
-	public void supprModele(int idModele){
-		modelePrincipal.supprModele(idModele);
-		remove(id2jmodele.get(idModele));
-		id2jmodele.remove(idModele);
-		validate();
-		repaint();
-	}
 	
-	public void addVariableTo(int idModele){
-		modelePrincipal.addVariableTo(idModele);
-		id2jmodele.get(idModele).addVariable();
-		repaint();
-	}
-	public void supprVariableTo(int idModele){
-		modelePrincipal.supprVariableTo(idModele);
-		id2jmodele.get(idModele).supprVariable();
-		validate();
-		repaint();
-	}
-	public void changeVariable(int idModele, int idVar, int newVariable) {
-		modelePrincipal.changeVariable(idModele,idVar, newVariable);
-	}
-
 	class CreerListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 	    	String item = ((JMenuItem)e.getSource()).getText();
 	    	if(item.equals(creerEntier)){
-	    		addModele(new MEntier(1,9));}
+	    		String str = JOptionPane.showInputDialog(null, "Entrez une valeur :", "Creation d'un entier", JOptionPane.QUESTION_MESSAGE);
+	    	    try{
+	    	    	int entier=Integer.parseInt(str);
+	    	    	addModele(new MEntier(entier));
+	    	    }
+	    	    catch(Exception except)
+	    	    {
+	    	    	System.out.println("Exception is "+e);
+	    	    }
+	    	}
+	    	if(item.equals(creerEntierAlea)){
+	    		addModele(new MEntierAlea(1,9));}
 	    	else if(item.equals(creerSomme)){
 	    		addModele(new MSomme());}
 	    	else if(item.equals(creerProduit)){
@@ -202,37 +375,4 @@ public class JModeleFactory extends JPanel {
 	    }    
 
 	  }
-	class GenererStandardListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			System.out.println(modelePrincipal.genererExpression().toString("Standard"));
-		}
-	}
-	class GenererLatexListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-			System.out.println(modelePrincipal.genererExpression().toString("Latex"));
-		}
-	}
-	class PopupListener extends MouseAdapter {
-	    public void mousePressed(MouseEvent e) {
-	    	variableSelect = -1;
-	        repaint();
-	        maybeShowPopup(e);
-	    }
-
-	    public void mouseReleased(MouseEvent e) {
-	    	maybeShowPopup(e);
-	    }
-
-	    private void maybeShowPopup(MouseEvent e) {
-	        if (e.isPopupTrigger()) {
-	        	popupX = e.getX();
-	        	popupY = e.getY();
-
-	        	popupModeleFactory.show(e.getComponent(),
-	                       e.getX(), e.getY());
-	        }
-	    }
-	}
-	
-	
 }

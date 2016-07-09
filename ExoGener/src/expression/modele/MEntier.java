@@ -1,64 +1,30 @@
 package expression.modele;
 
-import java.util.ArrayList;
+public class MEntier extends MEntierAlea {
 
-import expression.Entier;
-import expression.Expression;
-
-public class MEntier extends Modele {
-	int min;
-	int max;
-	boolean avecZero;
-	
-	public MEntier(int min,int max,boolean avecZero){
-		this.min = min;
-		this.max = max;
-		this.avecZero = avecZero;
-		this.variablesLibres = new ArrayList<>();
-		this.nbVarModifiable=false;
-		this.minVariables=0;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1009477968584244448L;
+ 
+	public MEntier(int valeur){
+		super(valeur, valeur,true);
 	}
 	
-	
-	public MEntier(int min,int max){
-		this.min = min;
-		this.max = max;
-		this.avecZero = false;
-		variablesLibres = new ArrayList<>();
-	}
-	
-	public String getNom(){
-		StringBuilder result = new StringBuilder();
-		result.append("Entier(");
-		result.append(min);
-		result.append(",");
-		result.append(max);
-		result.append(")");
-		return result.toString();
+	public int getValeur(){
+		return min;
 	}
 	
 	@Override
-	public Expression genererExpression() {
-		int valeur =0;
-		if(avecZero || min>0 || max<0){
-			valeur = (int)( Math.random()*(max+1 - min))+min;
-		}
-		else{
-			valeur = (int)( Math.random()*(max+1-(min+1)))+min+1;
-			if(valeur == 0){valeur = min;}
-		}
-		return new Entier(valeur);
+	public String getNom() {
+		return String.valueOf(getValeur());
 	}
-
+	
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
 		result.append("MEntier(");
 		result.append(min);
-		result.append(",");
-		result.append(max);
-		result.append(",");
-		result.append(avecZero);
 		result.append(")");
 		return result.toString();
 	}

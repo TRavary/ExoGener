@@ -29,8 +29,8 @@ public class JModele extends JPanel {
 	int dY;
 	boolean activeSelection = false;
 	
-	JPanel panelVariables = new JPanel();
-	ArrayList<JVariable> jvariables = new ArrayList<>();
+	JPanel panelParametres = new JPanel();
+	ArrayList<JParametre> jparametres = new ArrayList<>();
 	
 	public void init(int idModele,int x,int y){
 		this.idModele = idModele;
@@ -38,51 +38,63 @@ public class JModele extends JPanel {
 		
 		setLayout(new BorderLayout());
 		this.add(label,BorderLayout.CENTER);
-		panelVariables.setLayout(new GridLayout());
-		this.add(panelVariables,BorderLayout.PAGE_END);
+		panelParametres.setLayout(new GridLayout());
+		this.add(panelParametres,BorderLayout.PAGE_END);
 		
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		this.setLocation(x, y);
 		this.setVisible(true);
 		
-		label.setText(getModele().getNom().concat(String.valueOf(idModele)));
+		label.setText(getText());
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		this.add(label);
 		
-		int nbVar = getModele().getNbVariablesLibres();
-		if(nbVar !=0){
-			for(int idVar = 0;idVar<nbVar;idVar++){
-				addVariable();
-			}
-		}
+		update();
 		addMouseListener(new clicListener());
 		addMouseMotionListener(new deplacementListener());
 		addMouseListener(new PopupListener());
 	}
-	public void paintComponent(Graphics g)
-	{		
-		super.paintComponent(g);
-		this.setSize(90,60);
-		label.setHorizontalAlignment(SwingConstants.CENTER);
-		
-		if(idModele == getModeleFactory().modelePrincipal.idRacine){
-			setBorder(BorderFactory.createLineBorder(Color.black,2,true));
-		}
-		else{
-			setBorder(BorderFactory.createLineBorder(Color.black));
-		}
+	
+	public void addParametre(){
+		JParametre jp = new JParametre();
+		jparametres.add(jp);
+		panelParametres.add(jp);
+		jp.init(jparametres.size()-1,idModele);
+	}
+	
+	public void supprParametre(){
+		panelParametres.remove(jparametres.get(jparametres.size()-1));
+		jparametres.remove(jparametres.size()-1);
 	}
 	
 	
-	public void addVariable(){
-		JVariable jvar = new JVariable();
-		jvariables.add(jvar);
-		panelVariables.add(jvar);
-		jvar.init(jvariables.size()-1,idModele);
+	public void update(){
+		int nbParametres = getModele().getNbParametres();
+		while(nbParametres>jparametres.size()){
+			addParametre();
+		}
+		while(nbParametres<jparametres.size()){
+			supprParametre();
+		}
 	}
-	public void supprVariable(){
-		panelVariables.remove(jvariables.get(jvariables.size()-1));
-		jvariables.remove(jvariables.size()-1);
+	
+	public Point getAncre(){
+		Point ancre = new Point();
+		ancre.x = this.getX()+this.getWidth()/2;
+		ancre.y = this.getY();
+		return ancre;
+	}
+	public Point getAncreParametre(int numero){
+		Point ancre = new Point();
+		JParametre jp = jparametres.get(numero);
+		ancre.x = this.getX()+jp.getX()+jp.getWidth()/2;
+		ancre.y = this.getY()+this.getHeight();
+		return ancre;
+	}
+	
+	public String getText(){
+
+		return String.format("<html><div align=center>%s<br>id : %s</div></html>",getModele().getNom(),String.valueOf(idModele));
 	}
 	
 	
@@ -92,26 +104,26 @@ public class JModele extends JPanel {
 	public Modele getModele(){
 		return getModeleFactory().modelePrincipal.getModele(idModele);
 	}
+	public void paintComponent(Graphics g)
+	{		
+		super.paintComponent(g);
+		this.setSize(90,60);
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		if(idModele == getModeleFactory().modelePrincipal.getRacine()){
+			setBorder(BorderFactory.createLineBorder(Color.black,2,true));
+		}
+		else{
+			setBorder(BorderFactory.createLineBorder(Color.black));
+		}
+	}
 	
-	public Point getAncre(){
-		Point ancre = new Point();
-		ancre.x = this.getX()+this.getWidth()/2;
-		ancre.y = this.getY();
-		return ancre;
-	}
-	public Point getAncreVariable(int idVar){
-		Point ancre = new Point();
-		int nbVar = getModele().getNbVariablesLibres();
-		ancre.x = this.getX()+(2*idVar+1)*getWidth()/(2*nbVar);
-		ancre.y = this.getY()+this.getHeight();
-		return ancre;
-	}
 
 	public JPopupMenu createPopupMenu(){
 		JPopupMenu menu = new JPopupMenu();
 		
-		if(idModele != getModeleFactory().modelePrincipal.idRacine){
-			JMenuItem itemRacine = new JMenuItem("definir operation principale");
+		if(idModele != getModeleFactory().modelePrincipal.getRacine()){
+			JMenuItem itemRacine = new JMenuItem("definir racine");
 			itemRacine.addActionListener(new ActionListener(){
 				@Override public void actionPerformed(ActionEvent e) {
 					getModeleFactory().modelePrincipal.setRacine(idModele);}
@@ -119,18 +131,18 @@ public class JModele extends JPanel {
 			menu.add(itemRacine);
 		}
 
-		if(getModele().nbVarModifiable){
-			JMenuItem itemAddVar = new JMenuItem("Ajouter variable libre");
+		if(getModele().canAddParametre()){
+			JMenuItem itemAddVar = new JMenuItem("Ajouter parametre");
 			itemAddVar.addActionListener(new ActionListener(){
 				@Override public void actionPerformed(ActionEvent e) {
-					getModeleFactory().addVariableTo(idModele);}
+					getModeleFactory().addParametreTo(idModele);}
 			});
 			menu.add(itemAddVar);
-			if(getModele().getNbVariablesLibres()>getModele().minVariables){
-				JMenuItem itemSupprVar = new JMenuItem("Supprimer variable libre");
+			if(getModele().canSupprParametre()){
+				JMenuItem itemSupprVar = new JMenuItem("Supprimer parametre");
 				itemSupprVar.addActionListener(new ActionListener(){
 					@Override public void actionPerformed(ActionEvent e) {
-						getModeleFactory().supprVariableTo(idModele);}
+						getModeleFactory().supprParametreTo(idModele);}
 				});
 				menu.add(itemSupprVar);
 			}

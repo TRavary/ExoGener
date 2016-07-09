@@ -1,18 +1,20 @@
 package expression.modele;
 
-import java.util.ArrayList;
-
 import expression.Expression;
 import expression.Variable;
 
 public class MVariable extends Modele{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8495831299701953522L;
 	String nomVariable;
 	
 	public MVariable(String nomVariable){
+		nbParametres = 0;
+		nbParametresMin=0;
+		nbParametresModifiable=false;
 		this.nomVariable = nomVariable;
-		this.variablesLibres = new ArrayList<>();
-		this.nbVarModifiable=false;
-		this.minVariables=0;
 	}
 	
 	public String getNom(){
@@ -26,10 +28,6 @@ public class MVariable extends Modele{
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MVariable(");
-		result.append(nomVariable);
-		result.append(")");
-		return result.toString();
+		return String.format("MVariable(%s)",nomVariable);
 	}
 }

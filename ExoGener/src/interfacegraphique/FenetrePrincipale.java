@@ -26,6 +26,8 @@ public class FenetrePrincipale extends JFrame {
 	    
 	    menuOutils.add(modeleFactory.itemGenererStandard);
 	    menuOutils.add(modeleFactory.itemGenererLatex);
+	    menuOutils.add(modeleFactory.itemAfficherLatex);
+	    
 	    
 	    menuBar.add(menuOutils);
 	    menuCreer = modeleFactory.createMenuCreer();

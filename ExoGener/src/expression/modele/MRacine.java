@@ -1,19 +1,20 @@
 package expression.modele;
 
-import java.util.ArrayList;
-
 import expression.Expression;
 import expression.Racine;
-import expression.VariableLibre;
+import expression.Parametre;
 
 public class MRacine extends Modele {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8285554625111318703L;
+
 	public MRacine(){
-		variablesLibres = new ArrayList<>();
-		minVariables = 1;
-		nbVarModifiable = false;
-		
-		variablesLibres.add(0);
+		nbParametres = 1;
+		nbParametresMin=1;
+		nbParametresModifiable=false;
 	}
 
 	public String getNom(){
@@ -22,16 +23,12 @@ public class MRacine extends Modele {
 	
 	@Override
 	public Expression genererExpression() {
-		return new Racine(new VariableLibre(variablesLibres.get(0)));
+		return new Racine(new Parametre(0));
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MRacine(");
-		result.append(variablesLibres.get(0));
-		result.append(")");
-		return result.toString();
+		return "MRacine()";
 	}
 
 }

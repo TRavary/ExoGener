@@ -4,21 +4,22 @@ import java.util.ArrayList;
 
 import outils.Pair;
 
-public class VariableLibre extends Terme {
+public class Parametre extends Terme {
 	int numero;
-	
-	public VariableLibre(int numero)
+
+	public Parametre(int numero)
 	{
 		this.numero = numero;
 		this.operandes = new ArrayList<>();
 		priorite=Expression.prioriteParenthese;
 	}
 	
-	public static String getNom(int numero){
+	public static String getString(int numero){
 		String result = "%";
 		result = result.concat(String.valueOf(numero));
 		return result;
 	}
+
 	
 	public static int getNumero(String nom){
 		return Integer.valueOf(nom.substring(1));
@@ -26,19 +27,19 @@ public class VariableLibre extends Terme {
 	
 	@Override
 	public String toString(String destination) {
-		return VariableLibre.getNom(numero);
+		return Parametre.getString(numero);
 	}
 
 	@Override
 	public Expression Remplacer(ArrayList<Pair<String, Expression>> liste) {
 		for(int i=0;i<liste.size();i++)
 		{
-			if(toString().equals(liste.get(i).left))
+			if(getString(numero).equals(liste.get(i).left))
 			{
 				return liste.get(i).right;
 			}
 		}
-		return new VariableLibre(numero);
+		return new Parametre(numero);
 	}
 	
 	@Override
