@@ -34,6 +34,7 @@ public class JModele extends JPanel {
 	public JMenu createModifierMenu(){
 		JMenu menu = new JMenu();
 		
+		//toto tata
 		
 		return menu;
 	}
