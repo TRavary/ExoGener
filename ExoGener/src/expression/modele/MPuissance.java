@@ -1,39 +1,34 @@
 package expression.modele;
 
-import java.util.ArrayList;
-
 import expression.Expression;
 import expression.Puissance;
-import expression.VariableLibre;
+import expression.Parametre;
 
 public class MPuissance extends Modele {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5766280602780787930L;
+
 	public MPuissance(){
-		variablesLibres = new ArrayList<>();
-		minVariables = 2;
-		nbVarModifiable = false;
-		
-		variablesLibres.add(0);
-		variablesLibres.add(1);
+		nbParametres = 2;
+		nbParametresMin=2;
+		nbParametresModifiable=false;
 	}
 	
 	public String getNom(){
 		return "Puissance";
 	}
+	
 	@Override
 	public Expression genererExpression() {
-		return new Puissance(new VariableLibre(variablesLibres.get(0)),new VariableLibre(variablesLibres.get(1)));
+		return new Puissance(new Parametre(0),new Parametre(1));
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MPuissance(");
-		result.append(variablesLibres.get(0));
-		result.append(",");
-		result.append(variablesLibres.get(1));
-		result.append(")");
-		return result.toString();
+		return "MPuissance()";
 	}
 
 }

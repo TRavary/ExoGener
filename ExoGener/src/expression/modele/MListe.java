@@ -1,17 +1,19 @@
 package expression.modele;
 
-import java.util.ArrayList;
 import expression.Expression;
-import expression.VariableLibre;
+import expression.Parametre;
 
 
 public class MListe extends Modele {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1985105007296786983L;
+
 	public MListe(){
-		variablesLibres = new ArrayList<>();
-		variablesLibres.add(0);
-		variablesLibres.add(1);
-		minVariables = 2;
-		nbVarModifiable = true;
+		nbParametres = 2;
+		nbParametresMin=2;
+		nbParametresModifiable=true;
 	}
 	public String getNom(){
 		return "Liste";
@@ -20,26 +22,18 @@ public class MListe extends Modele {
 	public Expression genererExpression() {
 		double seuil = Math.random();
 		double u = 0;
-		for(int i=0;i<variablesLibres.size();i++){
-			u+=1./variablesLibres.size();
+		for(int i=0;i<nbParametres;i++){
+			u+=1./nbParametres;
 			if(u>seuil)
 			{
-				return new VariableLibre(variablesLibres.get(i));
+				return new Parametre(i);
 			}
 		}
-		return new VariableLibre(variablesLibres.get(variablesLibres.size()-1));
+		return new Parametre(nbParametres-1);
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MListe(");
-		result.append(variablesLibres.get(0));
-		for(int i=1;i<variablesLibres.size();i++){
-			result.append(",");
-			result.append(variablesLibres.get(i));
-		}
-		result.append(")");
-		return result.toString();
+		return String.format("MListe(%d)",nbParametres);
 	}
 }
