@@ -1,6 +1,3 @@
-import java.io.File;
-import java.io.IOException;
-
 import interfacegraphique.FenetrePrincipale;
 
 public class ExoGener {
