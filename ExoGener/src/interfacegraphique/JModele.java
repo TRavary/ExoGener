@@ -14,11 +14,14 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import expression.modele.MEntier;
+import expression.modele.MVariable;
 import expression.modele.Modele;
 
 @SuppressWarnings("serial")
@@ -44,9 +47,7 @@ public class JModele extends JPanel {
 		setBorder(BorderFactory.createLineBorder(Color.black));
 		this.setLocation(x, y);
 		this.setVisible(true);
-		
-		label.setText(getText());
-		label.setHorizontalAlignment(SwingConstants.CENTER);
+		this.updateText();
 		this.add(label);
 		
 		update();
@@ -76,6 +77,7 @@ public class JModele extends JPanel {
 		while(nbParametres<jparametres.size()){
 			supprParametre();
 		}
+		updateText();
 	}
 	
 	public Point getAncre(){
@@ -92,9 +94,9 @@ public class JModele extends JPanel {
 		return ancre;
 	}
 	
-	public String getText(){
-
-		return String.format("<html><div align=center>%s<br>id : %s</div></html>",getModele().getNom(),String.valueOf(idModele));
+	public void updateText(){
+		label.setText(String.format("<html><div align=center>%s<br>id : %s</div></html>",getModele().getNom(),String.valueOf(idModele)));
+		label.setHorizontalAlignment(SwingConstants.CENTER);
 	}
 	
 	
@@ -108,7 +110,6 @@ public class JModele extends JPanel {
 	{		
 		super.paintComponent(g);
 		this.setSize(90,60);
-		label.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		if(idModele == getModeleFactory().modelePrincipal.getRacine()){
 			setBorder(BorderFactory.createLineBorder(Color.black,2,true));
@@ -122,6 +123,7 @@ public class JModele extends JPanel {
 	public JPopupMenu createPopupMenu(){
 		JPopupMenu menu = new JPopupMenu();
 		
+		// ITEM : definir racine
 		if(idModele != getModeleFactory().modelePrincipal.getRacine()){
 			JMenuItem itemRacine = new JMenuItem("definir racine");
 			itemRacine.addActionListener(new ActionListener(){
@@ -130,24 +132,59 @@ public class JModele extends JPanel {
 			});
 			menu.add(itemRacine);
 		}
-
+		
+		// ITEM : Ajouter parametre
 		if(getModele().canAddParametre()){
-			JMenuItem itemAddVar = new JMenuItem("Ajouter parametre");
-			itemAddVar.addActionListener(new ActionListener(){
+			JMenuItem itemAddParametre = new JMenuItem("Ajouter parametre");
+			itemAddParametre.addActionListener(new ActionListener(){
 				@Override public void actionPerformed(ActionEvent e) {
 					getModeleFactory().addParametreTo(idModele);}
 			});
-			menu.add(itemAddVar);
-			if(getModele().canSupprParametre()){
-				JMenuItem itemSupprVar = new JMenuItem("Supprimer parametre");
-				itemSupprVar.addActionListener(new ActionListener(){
-					@Override public void actionPerformed(ActionEvent e) {
-						getModeleFactory().supprParametreTo(idModele);}
-				});
-				menu.add(itemSupprVar);
-			}
+			menu.add(itemAddParametre);
 		}
 		
+		// ITEM : Supprimer racine
+		if(getModele().canSupprParametre()){
+			JMenuItem itemSupprParametre = new JMenuItem("Supprimer parametre");
+			itemSupprParametre.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					getModeleFactory().supprParametreTo(idModele);}
+			});
+			menu.add(itemSupprParametre);
+		}
+		
+		// ITEM : Modifier valeur d'un entier
+		if(getModele().getClass().equals(MEntier.class)){
+			JMenuItem itemChangeValeur = new JMenuItem("Modifier valeur");
+			itemChangeValeur.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					String strValeur = JOptionPane.showInputDialog(null,"Entrez une valeur : ","Modifier valeur",JOptionPane.QUESTION_MESSAGE); 
+					try {
+						((MEntier)getModele()).setValeur(Integer.valueOf(strValeur));
+						getModeleFactory().updateAllComponents();
+					} catch (NumberFormatException e1){
+						e1.printStackTrace();
+					}
+				}
+			});
+			menu.add(itemChangeValeur);
+		}
+		
+		// ITEM : Modifier nom d'une variable
+		if(getModele().getClass().equals(MVariable.class)){
+			JMenuItem itemChangeNom = new JMenuItem("Modifier nom de variable");
+			itemChangeNom.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					String nouveauNom = JOptionPane.showInputDialog(null,"Entrez un nom de variable : ","Modifier nom de variable",JOptionPane.QUESTION_MESSAGE); 
+					((MVariable)getModele()).setNom(nouveauNom);
+					getModeleFactory().updateAllComponents();
+					
+				}
+			});
+			menu.add(itemChangeNom);
+		}
+		
+		// ITEM : Supprimer modele
 		JMenuItem supprModele = new JMenuItem("Supprimer modele");
 		supprModele.addActionListener(new ActionListener(){
 			@Override public void actionPerformed(ActionEvent e) {
