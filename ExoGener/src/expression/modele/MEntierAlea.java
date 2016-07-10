@@ -24,12 +24,11 @@ public class MEntierAlea extends Modele {
 	
 	
 	public MEntierAlea(int min,int max){
-		nbParametres = 0;
-		nbParametresMin=0;
-		nbParametresModifiable=false;
-		this.min = min;
-		this.max = max;
-		this.avecZero = false;
+		this(min,max,false);
+	}
+	
+	public MEntierAlea(){
+		this(1,9);
 	}
 	
 	public String getNom(){

@@ -17,8 +17,16 @@ public class MVariable extends Modele{
 		this.nomVariable = nomVariable;
 	}
 	
+	public MVariable(){
+		this("x");
+	}
+	
 	public String getNom(){
 		return nomVariable;
+	}
+	
+	public void setNom(String nom){
+		nomVariable = nom;
 	}
 
 	@Override

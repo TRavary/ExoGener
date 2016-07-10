@@ -9,7 +9,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -36,34 +35,21 @@ import expression.modele.MRacine;
 import expression.modele.MSomme;
 import expression.modele.MVariable;
 import expression.modele.Modele;
+import expression.modele.ModeleManager;
 
 @SuppressWarnings("serial")
 public class JModeleFactory extends JPanel {
 	
-	MArbre modelePrincipal = new MArbre();;
+	MArbre modelePrincipal = new MArbre();
+	ModeleManager modeleManager;
 	HashMap<Integer,JModele> id2jmodele = new HashMap<>();;
 	int idModeleSelect = -1;
 	int numeroSelect = -1;
-
-
-	static String creerVariable = "Variable";
-	static String creerEntier = "Entier";
-	static String creerEntierAlea = "EntierAlea";
-	static String creerSomme = "Somme";
-	static String creerProduit = "Produit";
-	static String creerQuotient = "Quotient";
-	static String creerPuissance = "Puissance";
-	static String creerOppose = "Opposé";
-	static String creerRacine = "Racine carrée";
-	static String creerParenthese = "Parenthèses";
-	static String creerListe = "Liste";
-
-
+	
 	JMenuItem itemGenererStandard = new JMenuItem("Generer Expression");
 	JMenuItem itemGenererLatex = new JMenuItem("Generer Latex");
 	JMenuItem itemAfficherLatex = new JMenuItem("Afficher arbre");
 
-	JPopupMenu popupModeleFactory = new JPopupMenu();
 	JMenuItem itemEnregistrer = new JMenuItem("Enregistrer");
 	JMenuItem itemCharger = new JMenuItem("Charger");
 	
@@ -85,75 +71,41 @@ public class JModeleFactory extends JPanel {
 		numeroSelect = -1;
 	}
 	
-	public void init(){
+	public void init(ModeleManager modeleManager){
+		this.modeleManager = modeleManager;
 		setLayout(null);
 		itemGenererStandard.addActionListener(new GenererStandardListener());
 	    itemGenererLatex.addActionListener(new GenererLatexListener());
 	    itemAfficherLatex.addActionListener(new AfficherListener());
-	
-	    popupModeleFactory.add(createMenuCreer());
-	    
 	    itemEnregistrer.addActionListener(new ActionListener(){
 	    	public void actionPerformed(ActionEvent e) {
 				MArbre modele = modelePrincipal;
-				resetModelePrincipal();
-				ObjectOutputStream oos = null;
-
+				
+				String nomModele = JOptionPane.showInputDialog(null, "Entrez un nom de modele :", "Sauvegarder modele", JOptionPane.QUESTION_MESSAGE);
+				
 				try {
-				  final FileOutputStream fichier = new FileOutputStream("test.mod");
-				  oos = new ObjectOutputStream(fichier);
-				  oos.writeObject(modele);
-				} catch (final java.io.IOException e1) {
-				  e1.printStackTrace();
-				} finally {
-				  try {
-				    if (oos != null) {
-				      oos.flush();
-				      oos.close();
-				    }
-				  } catch (final IOException ex) {
-				    ex.printStackTrace();
-				  }
+					modeleManager.inserer(modele, nomModele);
+				} catch (Exception e1) {
+					e1.printStackTrace();
 				}
 				
+				resetModelePrincipal();
+				modele.setNom(nomModele);
 				addModele(modele);
 				updateAllComponents();
 			}
 	    });
 	    
-	    
-	    itemCharger.addActionListener(new ActionListener(){
-	    	public void actionPerformed(ActionEvent e) {
-    		    ObjectInputStream ois = null;
-
-    		    try {
-			      final FileInputStream fichier = new FileInputStream("test.mod");
-			      ois = new ObjectInputStream(fichier);
-				  Modele modele = (Modele) ois.readObject(); 
-				  addModele(modele);
-    		    } catch (final java.io.IOException e1) {
-    		      e1.printStackTrace();
-    		    } catch (final ClassNotFoundException e1) {
-    		      e1.printStackTrace();
-    		    } finally {
-    		      try {
-    		        if (ois != null) {
-    		          ois.close();
-    		        }
-    		      } catch (final IOException ex) {
-    		        ex.printStackTrace();
-    		      }
-    		    }
-	    	 
-				updateAllComponents();
-			}
-	    });
-	    
-	    popupModeleFactory.add(itemEnregistrer);
-	    popupModeleFactory.add(itemCharger);
-	    
 	    addMouseListener(new PopupListener());
 	}
+	
+	public JPopupMenu getPopupMenu(){
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(modeleManager.createMenuCreerModele());
+		popup.add(itemEnregistrer);
+		return popup;
+	}
+	
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
 		Graphics2D g2= (Graphics2D)g.create();
@@ -283,96 +235,9 @@ public class JModeleFactory extends JPanel {
 	        	popupX = e.getX();
 	        	popupY = e.getY();
 
-	        	popupModeleFactory.show(e.getComponent(),
+	        	getPopupMenu().show(e.getComponent(),
 	                       e.getX(), e.getY());
 	        }
 	    }
 	}
-	
-	
-	
-	public JMenu createMenuCreer(){
-		JMenu menu = new JMenu("Creer");
-
-		JMenuItem itemEntier = new JMenuItem(JModeleFactory.creerEntier);
-		JMenuItem itemEntierAlea = new JMenuItem(JModeleFactory.creerEntierAlea);
-		JMenuItem itemSomme = new JMenuItem(JModeleFactory.creerSomme);
-		JMenuItem itemProduit = new JMenuItem(JModeleFactory.creerProduit);
-		JMenuItem itemQuotient = new JMenuItem(JModeleFactory.creerQuotient);
-		JMenuItem itemListe = new JMenuItem(JModeleFactory.creerListe);
-		JMenuItem itemPuissance = new JMenuItem(JModeleFactory.creerPuissance);
-		JMenuItem itemOppose = new JMenuItem(JModeleFactory.creerOppose);
-		JMenuItem itemRacine = new JMenuItem(JModeleFactory.creerRacine);
-		JMenuItem itemParenthese = new JMenuItem(JModeleFactory.creerParenthese);
-		JMenuItem itemVariable = new JMenuItem(JModeleFactory.creerVariable);
-		
-		
-		CreerListener CL = new CreerListener();
-	    itemEntier.addActionListener(CL);
-	    itemEntierAlea.addActionListener(CL);
-	    itemSomme.addActionListener(CL);
-	    itemProduit.addActionListener(CL);
-	    itemQuotient.addActionListener(CL);
-	    itemListe.addActionListener(CL);
-	    itemPuissance.addActionListener(CL);
-	    itemOppose.addActionListener(CL);
-	    itemRacine.addActionListener(CL);
-	    itemParenthese.addActionListener(CL);
-	    itemVariable.addActionListener(CL);
-	    
-	    
-	    menu.add(itemVariable);
-	    menu.add(itemEntier);
-	    menu.add(itemEntierAlea);
-	    menu.add(itemSomme);
-	    menu.add(itemProduit);
-	    menu.add(itemQuotient);
-	    menu.add(itemListe);
-	    menu.add(itemPuissance);
-	    menu.add(itemOppose);
-	    menu.add(itemRacine);
-	    menu.add(itemParenthese);
-	    
-		return menu;
-	}
-	
-	
-	
-	class CreerListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-	    	String item = ((JMenuItem)e.getSource()).getText();
-	    	if(item.equals(creerEntier)){
-	    		String str = JOptionPane.showInputDialog(null, "Entrez une valeur :", "Creation d'un entier", JOptionPane.QUESTION_MESSAGE);
-	    	    try{
-	    	    	int entier=Integer.parseInt(str);
-	    	    	addModele(new MEntier(entier));
-	    	    }
-	    	    catch(Exception except)
-	    	    {
-	    	    	System.out.println("Exception is "+e);
-	    	    }
-	    	}
-	    	if(item.equals(creerEntierAlea)){
-	    		addModele(new MEntierAlea(1,9));}
-	    	else if(item.equals(creerSomme)){
-	    		addModele(new MSomme());}
-	    	else if(item.equals(creerProduit)){
-	    		addModele(new MProduit());}
-	    	else if(item.equals(creerQuotient)){
-	    		addModele(new MQuotient());}
-	    	else if(item.equals(creerListe)){
-	    		addModele(new MListe());}
-	    	else if(item.equals(creerPuissance)){
-	    		addModele(new MPuissance());}
-	    	else if(item.equals(creerOppose)){
-	    		addModele(new MOppose());}
-	    	else if(item.equals(creerParenthese)){
-	    		addModele(new MParenthese());}
-	    	else if(item.equals(creerRacine)){
-	    		addModele(new MRacine());}
-	    	else if(item.equals(creerVariable)){
-	    		addModele(new MVariable("x"));}
-	    }    
-
-	  }
 }

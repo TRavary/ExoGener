@@ -15,6 +15,7 @@ public class MListe extends Modele {
 		nbParametresMin=2;
 		nbParametresModifiable=true;
 	}
+	
 	public String getNom(){
 		return "Liste";
 	}

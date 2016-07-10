@@ -1,5 +1,6 @@
 package expression.modele;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +21,8 @@ public class MArbre extends Modele {
 	private HashMap<Integer,Modele> id2modele = new HashMap<>();
 	private HashMap<Integer,ArrayList<EtatParametre>> parametres = new HashMap<>();
 	// "parametres.get(idModele)" : liste des etats de chaque parametre associé aux modele de l'arbre
-	 
+	
+	private String nomModele = "Arbre";
 	
 	private int idRacine = -1;
 	private int lastIdModele = -1;
@@ -32,7 +34,12 @@ public class MArbre extends Modele {
 	}
 	
 	public String getNom(){
-		return "Arbre";
+		File nomComplet = new File(nomModele);
+		return nomComplet.getName();
+	}
+	
+	public void setNom(String nomComplet){
+		nomModele = nomComplet;
 	}
 	
 	public void setRacine(int idModele){

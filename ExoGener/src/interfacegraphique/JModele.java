@@ -67,7 +67,7 @@ public class JModele extends JPanel {
 		jparametres.remove(jparametres.size()-1);
 	}
 	
-	
+
 	public void update(){
 		int nbParametres = getModele().getNbParametres();
 		while(nbParametres>jparametres.size()){

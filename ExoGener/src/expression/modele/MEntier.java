@@ -11,6 +11,10 @@ public class MEntier extends MEntierAlea {
 		super(valeur, valeur,true);
 	}
 	
+	public MEntier(){
+		this(0);
+	}
+	
 	public int getValeur(){
 		return min;
 	}
