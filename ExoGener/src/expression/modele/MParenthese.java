@@ -1,19 +1,20 @@
 package expression.modele;
 
-import java.util.ArrayList;
-
 import expression.Expression;
 import expression.Parenthese;
-import expression.VariableLibre;
+import expression.Parametre;
 
 public class MParenthese extends Modele {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5407984520999757886L;
+
 	public MParenthese(){
-		variablesLibres = new ArrayList<>();
-		minVariables = 1;
-		nbVarModifiable = false;
-		
-		variablesLibres.add(0);
+		nbParametres = 1;
+		nbParametresMin=1;
+		nbParametresModifiable=false;
 	}
 	
 	public String getNom(){
@@ -22,16 +23,12 @@ public class MParenthese extends Modele {
 	
 	@Override
 	public Expression genererExpression() {
-		return new Parenthese(new VariableLibre(variablesLibres.get(0)));
+		return new Parenthese(new Parametre(0));
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MParenthese(");
-		result.append(variablesLibres.get(0));
-		result.append(")");
-		return result.toString();
+		return "MParentheses()";
 	}
 
 }

@@ -44,7 +44,6 @@ public abstract class Expression {
 		return toString(destinationStandard);
 	}
 	
-	abstract public Expression Remplacer(ArrayList<Pair<String,Expression>> liste);
 	public boolean isVariable(String nom){
 		for(int i=0;i<operandes.size();i++){
 			if(operandes.get(i).isVariable(nom)){return true;}
@@ -64,6 +63,10 @@ public abstract class Expression {
 		}
 		return minVar;
 	}
+	
+	abstract public Expression Remplacer(ArrayList<Pair<String,Expression>> liste);
+	
+	
 	
 	public Expression Remplacer(@SuppressWarnings("unchecked") Pair<String,Expression>... args){
 		ArrayList<Pair<String,Expression>> liste= new ArrayList<>();

@@ -1,20 +1,20 @@
 package expression.modele;
 
-import java.util.ArrayList;
-
 import expression.Expression;
 import expression.Quotient;
-import expression.VariableLibre;
+import expression.Parametre;
 
 public class MQuotient extends Modele {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7411730826746091543L;
+
 	public MQuotient(){
-		variablesLibres = new ArrayList<>();
-		minVariables = 2;
-		nbVarModifiable = false;
-		
-		variablesLibres.add(0);
-		variablesLibres.add(1);
+		nbParametres = 2;
+		nbParametresMin=2;
+		nbParametresModifiable=true;
 	}
 	
 	public String getNom(){
@@ -22,18 +22,12 @@ public class MQuotient extends Modele {
 	}
 	@Override
 	public Expression genererExpression() {
-		return new Quotient(new VariableLibre(variablesLibres.get(0)),new VariableLibre(variablesLibres.get(1)));
+		return new Quotient(new Parametre(0),new Parametre(1));
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MQuotient(");
-		result.append(variablesLibres.get(0));
-		result.append(",");
-		result.append(variablesLibres.get(1));
-		result.append(")");
-		return result.toString();
+		return "MQuotient";
 	}
 
 }

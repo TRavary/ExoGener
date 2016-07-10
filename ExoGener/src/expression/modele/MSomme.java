@@ -4,17 +4,19 @@ import java.util.ArrayList;
 
 import expression.Expression;
 import expression.Somme;
-import expression.VariableLibre;
+import expression.Parametre;
 
 public class MSomme extends Modele {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7615269343944771247L;
+
 	public MSomme(){
-		variablesLibres = new ArrayList<>();
-		minVariables = 2;
-		nbVarModifiable = true;
-		
-		variablesLibres.add(0);
-		variablesLibres.add(1);
+		nbParametres = 2;
+		nbParametresMin=2;
+		nbParametresModifiable=true;
 	}
 	
 	public String getNom(){
@@ -24,23 +26,15 @@ public class MSomme extends Modele {
 	@Override
 	public Expression genererExpression() {
 		ArrayList<Expression> variables = new ArrayList<>();
-		for(int i=0;i<variablesLibres.size();i++){
-			variables.add(new VariableLibre(variablesLibres.get(i)));
+		for(int i=0;i<nbParametres;i++){
+			variables.add(new Parametre(i));
 		}
 		return new Somme(variables);
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MSomme(");
-		result.append(variablesLibres.get(0));
-		for(int i=1;i<variablesLibres.size();i++){
-			result.append(",");
-			result.append(variablesLibres.get(i));
-		}
-		result.append(")");
-		return result.toString();
+		return String.format("MSomme(%d)", nbParametres);
 	}
 
 }

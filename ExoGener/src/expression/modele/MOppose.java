@@ -1,35 +1,32 @@
 package expression.modele;
 
-import java.util.ArrayList;
-
 import expression.Expression;
 import expression.Oppose;
-import expression.VariableLibre;
+import expression.Parametre;
 
 public class MOppose extends Modele {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6183778465165381696L;
+
 	public MOppose(){
-		variablesLibres = new ArrayList<>();
-		minVariables = 1;
-		nbVarModifiable = false;
-		
-		variablesLibres.add(0);
+		nbParametres = 1;
+		nbParametresMin=1;
+		nbParametresModifiable=false;
 	}
 	public String getNom(){
 		return "Oppose";
 	}
 	@Override
 	public Expression genererExpression() {
-		return new Oppose(new VariableLibre(variablesLibres.get(0)));
+		return new Oppose(new Parametre(0));
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder();
-		result.append("MOppose(");
-		result.append(variablesLibres.get(0));
-		result.append(")");
-		return result.toString();
+		return "MOppose()";
 	}
 
 }

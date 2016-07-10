@@ -7,127 +7,118 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import expression.modele.MArbre;
 import expression.modele.MEntier;
+import expression.modele.MEntierAlea;
 import expression.modele.MListe;
-import expression.modele.MManager;
+import expression.modele.MOppose;
+import expression.modele.MParenthese;
 import expression.modele.MProduit;
+import expression.modele.MPuissance;
 import expression.modele.MQuotient;
+import expression.modele.MRacine;
 import expression.modele.MSomme;
+import expression.modele.MVariable;
 import expression.modele.Modele;
+import expression.modele.ModeleManager;
 
 @SuppressWarnings("serial")
 public class JModeleFactory extends JPanel {
 	
-	MManager modelePrincipal;
-	ArrayList<JModele> jmodeles;
-	int variableSelect = -1;
-
-	static String creerEntier = "Entier";
-	static String creerSomme = "Somme";
-	static String creerProduit = "Produit";
-	static String creerQuotient = "Quotient";
-	static String creerListe = "Liste";
-
+	MArbre modelePrincipal = new MArbre();
+	ModeleManager modeleManager;
+	HashMap<Integer,JModele> id2jmodele = new HashMap<>();;
+	int idModeleSelect = -1;
+	int numeroSelect = -1;
+	
 	JMenuItem itemGenererStandard = new JMenuItem("Generer Expression");
 	JMenuItem itemGenererLatex = new JMenuItem("Generer Latex");
+	JMenuItem itemAfficherLatex = new JMenuItem("Afficher arbre");
 
+	JMenuItem itemEnregistrer = new JMenuItem("Enregistrer");
+	JMenuItem itemCharger = new JMenuItem("Charger");
 	
-	
-	JPopupMenu popupModeleFactory = new JPopupMenu();
 	int popupX = 10;
 	int popupY = 10;
 	
-	public JModeleFactory(){
-		modelePrincipal = new MManager();
-		jmodeles = new ArrayList<>();
-		
+	public void resetModelePrincipal(){
+		Iterator<Integer> iter = id2jmodele.keySet().iterator();
+		while(iter.hasNext())
+		{
+			int idModele = iter.next();
+			remove(id2jmodele.get(idModele));
+			id2jmodele.remove(idModele);
+			iter = id2jmodele.keySet().iterator();
+		}
+		modelePrincipal = new MArbre();
+		id2jmodele = new HashMap<>();
+		idModeleSelect = -1;
+		numeroSelect = -1;
 	}
 	
-	public void init(){
+	public void init(ModeleManager modeleManager){
+		this.modeleManager = modeleManager;
 		setLayout(null);
-	    GenererStandardListener GSL = new GenererStandardListener();
-	    itemGenererStandard.addActionListener(GSL);
-	    GenererLatexListener GLL = new GenererLatexListener();
-	    itemGenererLatex.addActionListener(GLL);
+		itemGenererStandard.addActionListener(new GenererStandardListener());
+	    itemGenererLatex.addActionListener(new GenererLatexListener());
+	    itemAfficherLatex.addActionListener(new AfficherListener());
+	    itemEnregistrer.addActionListener(new ActionListener(){
+	    	public void actionPerformed(ActionEvent e) {
+				MArbre modele = modelePrincipal;
+				
+				String nomModele = JOptionPane.showInputDialog(null, "Entrez un nom de modele :", "Sauvegarder modele", JOptionPane.QUESTION_MESSAGE);
+				
+				try {
+					modeleManager.inserer(modele, nomModele);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				
+				resetModelePrincipal();
+				modele.setNom(nomModele);
+				addModele(modele);
+				updateAllComponents();
+			}
+	    });
 	    
-	    
-	    MouseListener PL = new PopupListener();
-	    popupModeleFactory.add(createMenuCreer());
-	    addMouseListener(PL);
+	    addMouseListener(new PopupListener());
 	}
 	
-	public JMenu createMenuCreer(){
-		JMenu menu = new JMenu("Creer");
-
-		JMenuItem itemEntier = new JMenuItem(JModeleFactory.creerEntier);
-		JMenuItem itemSomme = new JMenuItem(JModeleFactory.creerSomme);
-		JMenuItem itemProduit = new JMenuItem(JModeleFactory.creerProduit);
-		JMenuItem itemQuotient = new JMenuItem(JModeleFactory.creerQuotient);
-		JMenuItem itemListe = new JMenuItem(JModeleFactory.creerListe);
-		
-		CreerListener CL = new CreerListener();
-	    itemEntier.addActionListener(CL);
-	    itemSomme.addActionListener(CL);
-	    itemProduit.addActionListener(CL);
-	    itemQuotient.addActionListener(CL);
-	    itemListe.addActionListener(CL);
-	    
-	    menu.add(itemEntier);
-	    menu.add(itemSomme);
-	    menu.add(itemProduit);
-	    menu.add(itemQuotient);
-	    menu.add(itemListe);
-	    
-		
-		return menu;
-	}
-	
-	public void select(int idModele,int variable){
-		if(variableSelect == -1){
-			variableSelect = variable;
-		}
-		else{
-			modelePrincipal.creerLien(variableSelect, idModele);
-			variableSelect = -1;
-		}
-		repaint();
-	}
-	
-	public void addModele(Modele nouveauModele)
-	{
-		modelePrincipal.addModele(nouveauModele);
-		int idNouveauModele = modelePrincipal.getLastIdModele();
-		JModele modele = new JModele(idNouveauModele);
-		this.add(modele);
-        jmodeles.add(modele);
-        jmodeles.get(idNouveauModele).init(popupX,popupY);
-        popupX = 10;
-        popupY = 10;
-        
+	public JPopupMenu getPopupMenu(){
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(modeleManager.createMenuCreerModele());
+		popup.add(itemEnregistrer);
+		return popup;
 	}
 	
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		Graphics2D g2= (Graphics2D)g.create() ; //profiter de Java2D et ne pas modifier g
+		Graphics2D g2= (Graphics2D)g.create();
 		
-		
-		for(int idModele=0;idModele<jmodeles.size();idModele++){
+		Iterator<Integer> iterIdModele = id2jmodele.keySet().iterator();
+		while(iterIdModele.hasNext()){
+			int idModele = iterIdModele.next();
 			Modele modele = modelePrincipal.getModele(idModele);
-			for(int idVar = 0;idVar<modele.getNbVariablesLibres();idVar++){
-				int variable = modele.getVariableLibre(idVar);
-				if(modelePrincipal.isLien(variable)){
-					int idLien = modelePrincipal.getIdLien(variable);
-					Point source = jmodeles.get(idModele).getAncreVariable(idVar);
-					Point destination = jmodeles.get(idLien).getAncre();
+			for(int p = 0;p<modele.getNbParametres();p++){
+				if(modelePrincipal.isLien(idModele,p)){
+					int idLien = modelePrincipal.getIdLien(idModele,p);
+					Point source = id2jmodele.get(idModele).getAncreParametre(p);
+					Point destination = id2jmodele.get(idLien).getAncre();
 					g2.draw(new Line2D.Double(source.x, source.y, destination.x, destination.y));
 				}
 			}
@@ -135,48 +126,108 @@ public class JModeleFactory extends JPanel {
 		g2.dispose() ;
 	}
 	
-	public void creerLien(int variable,int idModele){
-		modelePrincipal.creerLien(variable, idModele);
+	
+	
+	public void addModele(Modele nouveauModele)
+	{
+		modelePrincipal.addModele(nouveauModele);
+		int idNouveauModele = modelePrincipal.getLastIdModele();
+		JModele jmodele = new JModele();
+		this.add(jmodele);
+        id2jmodele.put(idNouveauModele, jmodele);
+        jmodele.init(idNouveauModele,popupX,popupY);
+        popupX = 10;
+        popupY = 10;   
+	}
+	
+	public void supprModele(int idModele){
+		modelePrincipal.supprModele(idModele);
+		remove(id2jmodele.get(idModele));
+		id2jmodele.remove(idModele);
+		updateAllComponents();
+	}
+	
+	
+	public void selectModele(int idModele){
+		if(numeroSelect != -1){
+			modelePrincipal.addLien(idModeleSelect, numeroSelect, idModele);
+			idModeleSelect = -1;
+			numeroSelect = -1;
+			updateAllComponents();
+		}
+	}
+	
+	
+	
+	public void selectParametre(int idModele,int numero){
+		idModeleSelect = idModele;
+		numeroSelect = numero;
+		updateAllComponents();
+	}
+	
+	public void updateAllComponents(){
+		Iterator<Integer> iterIdModele = id2jmodele.keySet().iterator();
+		while(iterIdModele.hasNext()){
+			int idModele = iterIdModele.next();
+			JModele jmodele = id2jmodele.get(idModele);
+			jmodele.update();
+		}
+		validate();
 		repaint();
 	}
 	
-	class CreerListener implements ActionListener{
-		public void actionPerformed(ActionEvent e) {
-	    	String item = ((JMenuItem)e.getSource()).getText();
-	    	if(item.equals(creerEntier)){
-	    		addModele(new MEntier(1,9));}
-	    	else if(item.equals(creerSomme)){
-	    		addModele(new MSomme());}
-	    	else if(item.equals(creerProduit)){
-	    		addModele(new MProduit());}
-	    	else if(item.equals(creerQuotient)){
-	    		addModele(new MQuotient());}
-	    	else if(item.equals(creerListe)){
-	    		addModele(new MListe());}
-	    }    
+	
+	public void addParametreTo(int idModele){
+		modelePrincipal.addParametreTo(idModele);
+		updateAllComponents();
+	}
+	
+	public void supprParametreTo(int idModele){
+		modelePrincipal.supprParametreTo(idModele);
+		updateAllComponents();
+	}
+	
+	public void FusionnerParametre(int idModele, int numeroModele, int nouveauNumero) {
+		modelePrincipal.FusionnerParametre(idModele, numeroModele, nouveauNumero);
+	}
+	
+	public void EchangerParametre(int idModele, int numeroModele, int nouveauNumero) {
+		modelePrincipal.EchangerParametre(idModele, numeroModele, nouveauNumero);
+	}
+	
+	public void DissocierParametre(int idModele,int numeroModele){
+		modelePrincipal.DissocierParametre(idModele,numeroModele);
+	}
 
-	  }
 	
 	class GenererStandardListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 			System.out.println(modelePrincipal.genererExpression().toString("Standard"));
 		}
 	}
-	
 	class GenererLatexListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 			System.out.println(modelePrincipal.genererExpression().toString("Latex"));
 		}
 	}
+	class AfficherListener implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			System.out.println(modelePrincipal.toString());
+		}
+	}
+	
 	
 	
 	class PopupListener extends MouseAdapter {
 	    public void mousePressed(MouseEvent e) {
+	    	idModeleSelect = -1;
+	    	numeroSelect = -1;
+	        repaint();
 	        maybeShowPopup(e);
 	    }
 
 	    public void mouseReleased(MouseEvent e) {
-	        maybeShowPopup(e);
+	    	maybeShowPopup(e);
 	    }
 
 	    private void maybeShowPopup(MouseEvent e) {
@@ -184,14 +235,9 @@ public class JModeleFactory extends JPanel {
 	        	popupX = e.getX();
 	        	popupY = e.getY();
 
-	        	popupModeleFactory.show(e.getComponent(),
+	        	getPopupMenu().show(e.getComponent(),
 	                       e.getX(), e.getY());
-	            
 	        }
 	    }
 	}
-	
-	
-	
-	
 }
