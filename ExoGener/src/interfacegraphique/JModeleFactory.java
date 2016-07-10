@@ -8,32 +8,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
 import expression.modele.MArbre;
-import expression.modele.MEntier;
-import expression.modele.MEntierAlea;
-import expression.modele.MListe;
-import expression.modele.MOppose;
-import expression.modele.MParenthese;
-import expression.modele.MProduit;
-import expression.modele.MPuissance;
-import expression.modele.MQuotient;
-import expression.modele.MRacine;
-import expression.modele.MSomme;
-import expression.modele.MVariable;
 import expression.modele.Modele;
 import expression.modele.ModeleManager;
 
