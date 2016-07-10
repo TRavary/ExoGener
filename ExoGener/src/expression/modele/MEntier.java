@@ -19,6 +19,11 @@ public class MEntier extends MEntierAlea {
 		return min;
 	}
 	
+	public void setValeur(int valeur){
+		this.min = valeur;
+		this.max = valeur;
+	}
+	
 	@Override
 	public String getNom() {
 		return String.valueOf(getValeur());
