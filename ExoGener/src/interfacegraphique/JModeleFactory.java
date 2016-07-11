@@ -51,6 +51,7 @@ public class JModeleFactory extends JPanel {
 		id2jmodele = new HashMap<>();
 		idModeleSelect = -1;
 		numeroSelect = -1;
+		updateAllComponents();
 	}
 	
 	public void init(ModeleManager modeleManager){

@@ -95,7 +95,7 @@ public class JModele extends JPanel {
 	}
 	
 	public void updateText(){
-		label.setText(String.format("<html><div align=center>%s<br>id : %s</div></html>",getModele().getNom(),String.valueOf(idModele)));
+		label.setText(String.format("<html><div align=center>%s</div></html>",getModele().getNom()));
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 	}
 	
