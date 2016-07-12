@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.Iterator;
+
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -17,13 +18,13 @@ import javax.swing.JPopupMenu;
 
 import expression.modele.MArbre;
 import expression.modele.Modele;
-import expression.modele.ModeleManager;
 
 @SuppressWarnings("serial")
 public class JModeleFactory extends JPanel {
 	
 	MArbre modelePrincipal = new MArbre();
-	ModeleManager modeleManager;
+	FenetrePrincipale FP;
+	
 	HashMap<Integer,JModele> id2jmodele = new HashMap<>();;
 	int idModeleSelect = -1;
 	int numeroSelect = -1;
@@ -54,8 +55,8 @@ public class JModeleFactory extends JPanel {
 		updateAllComponents();
 	}
 	
-	public void init(ModeleManager modeleManager){
-		this.modeleManager = modeleManager;
+	public void init(FenetrePrincipale FP){
+		this.FP = FP;
 		setLayout(null);
 		itemGenererStandard.addActionListener(new GenererStandardListener());
 	    itemGenererLatex.addActionListener(new GenererLatexListener());
@@ -67,7 +68,7 @@ public class JModeleFactory extends JPanel {
 				String nomModele = JOptionPane.showInputDialog(null, "Entrez un nom de modele :", "Sauvegarder modele", JOptionPane.QUESTION_MESSAGE);
 				
 				try {
-					modeleManager.inserer(modele, nomModele);
+					FP.getModeleManager().inserer(modele, nomModele);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -84,7 +85,7 @@ public class JModeleFactory extends JPanel {
 	
 	public JPopupMenu getPopupMenu(){
 		JPopupMenu popup = new JPopupMenu();
-		popup.add(modeleManager.createMenuCreerModele());
+		popup.add(FP.getModeleManager().createMenuCreerModele());
 		popup.add(itemEnregistrer);
 		return popup;
 	}

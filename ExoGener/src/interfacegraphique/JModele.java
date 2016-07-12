@@ -25,6 +25,7 @@ import expression.modele.MEntier;
 import expression.modele.MEntierAlea;
 import expression.modele.MVariable;
 import expression.modele.Modele;
+import outils.DeepCopy;
 
 @SuppressWarnings("serial")
 public class JModele extends JPanel {
@@ -104,7 +105,11 @@ public class JModele extends JPanel {
 	
 	public JModeleFactory getModeleFactory(){
 		return (JModeleFactory)SwingUtilities.getAncestorOfClass(JModeleFactory.class, this);
-	}	
+	}
+	
+	public JFeuilleFactory getFeuilleFactory(){
+		return getModeleFactory().FP.getFeuilleFactory();
+	}
 	public Modele getModele(){
 		return getModeleFactory().modelePrincipal.getModele(idModele);
 	}
@@ -124,6 +129,18 @@ public class JModele extends JPanel {
 
 	public JPopupMenu createPopupMenu(){
 		JPopupMenu menu = new JPopupMenu();
+		
+		// ITEM : Ajouter en exercice
+		if(getModele().getNbParametres() == 0){
+			JMenuItem itemExercice = new JMenuItem("Ajouter en exercice");
+			itemExercice.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					getFeuilleFactory().addExercice((Modele) DeepCopy.of(getModele()));
+				}
+			});
+			menu.add(itemExercice);
+		}
+		
 		
 		// ITEM : definir racine
 		if(idModele != getModeleFactory().modelePrincipal.getRacine()){
@@ -145,7 +162,7 @@ public class JModele extends JPanel {
 			menu.add(itemAddParametre);
 		}
 		
-		// ITEM : Supprimer racine
+		// ITEM : Supprimer parametre
 		if(getModele().canSupprParametre()){
 			JMenuItem itemSupprParametre = new JMenuItem("Supprimer parametre");
 			itemSupprParametre.addActionListener(new ActionListener(){

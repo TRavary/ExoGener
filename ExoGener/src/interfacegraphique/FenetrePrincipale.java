@@ -13,18 +13,22 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JSplitPane;
 
-import FeuilleExercice.Exercice;
-import FeuilleExercice.FeuilleExercice;
+import expression.modele.MArbre;
+import expression.modele.Modele;
 import expression.modele.ModeleManager;
+import outils.DeepCopy;
 
 
 
 @SuppressWarnings("serial")
 public class FenetrePrincipale extends JFrame {
-	JModeleFactory modeleFactory = new JModeleFactory();
-	ModeleManager modeleManager = new ModeleManager();
-	FeuilleExercice feuilleExercice = new FeuilleExercice();
+	private JFeuilleFactory feuilleFactory = new JFeuilleFactory();
+	private JModeleFactory modeleFactory = new JModeleFactory();
+	JSplitPane jsp = new JSplitPane();
+	
+	private ModeleManager modeleManager = new ModeleManager();
 	
 	String feuillePATH = "tex/feuilleExercice/";
 		
@@ -38,22 +42,28 @@ public class FenetrePrincipale extends JFrame {
 	    this.setLocationRelativeTo(null);
 	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);             
 	    this.setVisible(true);
-	    this.setContentPane(modeleFactory);	    
+	    this.setContentPane(jsp);	    
 	    
-	    modeleManager.init(modeleFactory);
-	    modeleFactory.init(modeleManager);
 	    
-	    menuOutils.add(modeleFactory.itemGenererStandard);
-	    menuOutils.add(modeleFactory.itemGenererLatex);
-	    menuOutils.add(modeleFactory.itemAfficherLatex);
+	    jsp.setLeftComponent(feuilleFactory);
+	    jsp.setRightComponent(getModeleFactory());
+	    
+	    getModeleManager().init(this);
+	    getModeleFactory().init(this);
+	    getFeuilleFactory().init(this);
+	    
+	    menuOutils.add(getModeleFactory().itemGenererStandard);
+	    menuOutils.add(getModeleFactory().itemGenererLatex);
+	    menuOutils.add(getModeleFactory().itemAfficherLatex);
+	    
 	    
 	    
 	    JMenuItem itemAjouterExercice = new JMenuItem("Ajouter un exercice");
 	    itemAjouterExercice.addActionListener(new ActionListener(){
 	    	@Override public void actionPerformed(ActionEvent arg0) {
-				String consigne = JOptionPane.showInputDialog(null,"Entrez la consigne de l'exercice :","Ajouter exercice",JOptionPane.QUESTION_MESSAGE);
-				feuilleExercice.addExercice(new Exercice(consigne,modeleFactory.modelePrincipal,6,3));
-				modeleFactory.resetModelePrincipal();
+				Modele modele = (Modele) DeepCopy.of(modeleFactory.modelePrincipal);
+				((MArbre)modele).setNom("Pas de nom");
+				feuilleFactory.addExercice(modele);
 	    	}
 	    });
 	    menuFeuille.add(itemAjouterExercice);
@@ -103,19 +113,24 @@ public class FenetrePrincipale extends JFrame {
 	    });
 	    menuFeuille.add(itemLaTotale);
 	    
+	    
 	    menuBar.add(menuOutils);
 	    menuBar.add(menuFeuille);
 	    this.setJMenuBar(menuBar);
 
 	    this.setVisible(true);
- 
 	}
 	
 	
+	public JFeuilleFactory getFeuilleFactory() {
+		return feuilleFactory;
+	}
+
+
 	void genererLatex(String nomFichier){
 		String latex = "";
 		try {
-			latex = feuilleExercice.genererLatex();
+			latex = feuilleFactory.feuilleExercice.genererLatex();
 		} catch (IOException e1) {e1.printStackTrace();}
 		try {
 			PrintWriter out = new PrintWriter(feuillePATH+nomFichier+".tex");
@@ -129,7 +144,11 @@ public class FenetrePrincipale extends JFrame {
 		final Process process;
 		try {
 			//process = new ProcessBuilder("pdflatex","-synctex=1 -interaction=nonstopmode "+feuillePATH+nomFichier+".tex").start();
-			process = runtime.exec(new String[] {"pdflatex", "-synctex=1","-interaction=nonstopmode",feuillePATH+nomFichier+".tex"});
+			process = runtime.exec(new String[] {"pdflatex",
+					"-interaction=nonstopmode",
+					"-aux-directory",feuillePATH+"Auxiliaires",
+					"-output-directory",feuillePATH,
+					feuillePATH+nomFichier+".tex"});
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -236,6 +255,15 @@ public class FenetrePrincipale extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+
+	public JModeleFactory getModeleFactory() {
+		return modeleFactory;
+	}
+
+	public ModeleManager getModeleManager() {
+		return modeleManager;
 	}
 }
 

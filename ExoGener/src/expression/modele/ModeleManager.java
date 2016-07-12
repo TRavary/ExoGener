@@ -15,16 +15,16 @@ import java.util.Map;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import interfacegraphique.JModeleFactory;
+import interfacegraphique.FenetrePrincipale;
 
 public class ModeleManager {
-	JModeleFactory jmf;
+	FenetrePrincipale FP;
 	ArrayList<String> nomModeles = new ArrayList<>();
 	Map<String,Class<? extends Modele>> baseModeles = new HashMap<>();
 	String PATH = "modeles";
 	
-	public void init(JModeleFactory jmf){
-		this.jmf = jmf;
+	public void init(FenetrePrincipale FP){
+		this.FP = FP;
 		
 		File path = new File(PATH);
 		if(!(path.exists() && path.isDirectory())){path.mkdir();}
@@ -99,7 +99,7 @@ public class ModeleManager {
 				@Override public void actionPerformed(ActionEvent e) {
 					
 					String nomModele = ((JMenuItem)e.getSource()).getName();
-					jmf.addModele(newModele(nomModele));
+					FP.getModeleFactory().addModele(newModele(nomModele));
 				}
 				
 			});
