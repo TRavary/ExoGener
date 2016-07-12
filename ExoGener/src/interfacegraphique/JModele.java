@@ -21,6 +21,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import expression.modele.MArbre;
 import expression.modele.MEntier;
 import expression.modele.MEntierAlea;
 import expression.modele.MVariable;
@@ -171,6 +172,19 @@ public class JModele extends JPanel {
 			});
 			menu.add(itemSupprParametre);
 		}
+		
+		// ITEM : Dissocier
+		if(getModele().getClass().equals(MArbre.class)){
+			JMenuItem itemDissocier = new JMenuItem("Dissocier");
+			itemDissocier.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					getModeleFactory().dissocier(idModele);
+				}
+				
+			});
+			menu.add(itemDissocier);
+		}
+		
 		
 		// ITEM : Modifier valeur d'un entier
 		if(getModele().getClass().equals(MEntier.class)){

@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -33,9 +34,6 @@ public class JModeleFactory extends JPanel {
 	JMenuItem itemGenererLatex = new JMenuItem("Generer Latex");
 	JMenuItem itemAfficherLatex = new JMenuItem("Afficher arbre");
 
-	JMenuItem itemEnregistrer = new JMenuItem("Enregistrer");
-	JMenuItem itemCharger = new JMenuItem("Charger");
-	
 	int popupX = 10;
 	int popupY = 10;
 	
@@ -61,32 +59,46 @@ public class JModeleFactory extends JPanel {
 		itemGenererStandard.addActionListener(new GenererStandardListener());
 	    itemGenererLatex.addActionListener(new GenererLatexListener());
 	    itemAfficherLatex.addActionListener(new AfficherListener());
-	    itemEnregistrer.addActionListener(new ActionListener(){
-	    	public void actionPerformed(ActionEvent e) {
-				MArbre modele = modelePrincipal;
-				
-				String nomModele = JOptionPane.showInputDialog(null, "Entrez un nom de modele :", "Sauvegarder modele", JOptionPane.QUESTION_MESSAGE);
-				
-				try {
-					FP.getModeleManager().inserer(modele, nomModele);
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-				
-				resetModelePrincipal();
-				modele.setNom(nomModele);
-				addModele(modele);
-				updateAllComponents();
-			}
-	    });
+	    
+	    
 	    
 	    addMouseListener(new PopupListener());
 	}
 	
+	public void associer(){
+		MArbre modele = modelePrincipal;
+		resetModelePrincipal();
+		modele.setNom("Nouveau Modele");
+		addModele(modele);
+	}
+	
 	public JPopupMenu getPopupMenu(){
 		JPopupMenu popup = new JPopupMenu();
+		
+		// SOUS MENU : Creer
 		popup.add(FP.getModeleManager().createMenuCreerModele());
+
+		// ITEM : Enregistrer
+		JMenuItem itemEnregistrer = new JMenuItem("Enregistrer");
+		itemEnregistrer.addActionListener(new ActionListener(){
+	    	public void actionPerformed(ActionEvent e) {
+				String nomModele = JOptionPane.showInputDialog(null, "Entrez un nom de modele :", "Sauvegarder modele", JOptionPane.QUESTION_MESSAGE);
+				try {
+					FP.getModeleManager().inserer(modelePrincipal, nomModele);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}				
+			}
+	    });
 		popup.add(itemEnregistrer);
+
+		// ITEM : ASSOCIER
+		JMenuItem itemAssocier = new JMenuItem("Associer");
+		itemAssocier.addActionListener(new ActionListener(){
+			@Override public void actionPerformed(ActionEvent e) {
+				associer();}
+		});
+		popup.add(itemAssocier);
 		return popup;
 	}
 	
@@ -114,18 +126,24 @@ public class JModeleFactory extends JPanel {
 	
 	public void addModele(Modele nouveauModele)
 	{
-		modelePrincipal.addModele(nouveauModele);
-		int idNouveauModele = modelePrincipal.getLastIdModele();
+		int idNouveauModele = modelePrincipal.addModele(nouveauModele);
+		addJModele(idNouveauModele);
+	}
+	
+	private void addJModele(int idNouveauModele){
 		JModele jmodele = new JModele();
 		this.add(jmodele);
         id2jmodele.put(idNouveauModele, jmodele);
         jmodele.init(idNouveauModele,popupX,popupY);
         popupX = 10;
-        popupY = 10;   
+        popupY = 10;
 	}
-	
 	public void supprModele(int idModele){
 		modelePrincipal.supprModele(idModele);
+		supprJModele(idModele);
+	}
+	
+	private void supprJModele(int idModele){
 		remove(id2jmodele.get(idModele));
 		id2jmodele.remove(idModele);
 		updateAllComponents();
@@ -223,5 +241,13 @@ public class JModeleFactory extends JPanel {
 	                       e.getX(), e.getY());
 	        }
 	    }
+	}
+	
+	public void dissocier(int idModele) {
+		ArrayList<Integer> nouvellesId = modelePrincipal.dissocier(idModele);
+		for(int id : nouvellesId){
+			addJModele(id);
+		}
+		supprJModele(idModele);
 	}
 }

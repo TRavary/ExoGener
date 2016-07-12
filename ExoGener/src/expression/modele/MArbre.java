@@ -10,6 +10,7 @@ import java.util.Stack;
 import expression.Expression;
 import expression.Variable;
 import expression.Parametre;
+import outils.DeepCopy;
 import outils.Pair;
 
 public class MArbre extends Modele {
@@ -25,7 +26,6 @@ public class MArbre extends Modele {
 	private String nomModele = "Arbre";
 	
 	private int idRacine = -1;
-	private int lastIdModele = -1;
 	
 	public MArbre(){
 		nbParametres = 0;
@@ -45,9 +45,8 @@ public class MArbre extends Modele {
 	public void setRacine(int idModele){
 		idRacine = idModele;
 	}
-	public int getLastIdModele(){
-		return lastIdModele;
-	}
+	
+	
 	public int getRacine(){
 		return idRacine;
 	}
@@ -65,7 +64,7 @@ public class MArbre extends Modele {
 		return nbParametres;
 	}
 	
-	public void addModele(Modele nouveauModele){
+	public int addModele(Modele nouveauModele){
 		int idModele = getNewIdModele();
 		parametres.put(idModele, new ArrayList<>());
 		for(int i=0;i<nouveauModele.getNbParametres();i++){
@@ -74,7 +73,7 @@ public class MArbre extends Modele {
 		
 		if(id2modele.size()==0){setRacine(0);}
 		id2modele.put(idModele,nouveauModele);
-		lastIdModele = idModele;
+		return idModele;
 	}
 	
 	private void addNewParametre(int idModele){
@@ -208,6 +207,87 @@ public class MArbre extends Modele {
 		EtatParametre etat = parametres.get(idModele).get(numeroModele);
 		etat.setNumero(getNewIdParametre());
 		nbParametres+=1;
+	}
+	
+	public ArrayList<Integer> dissocier(int idModele){
+		Modele modele = id2modele.get(idModele);
+		if(!modele.getClass().equals(MArbre.class)){
+			return new ArrayList<>();
+		}
+		
+		MArbre sousArbre = (MArbre) modele;
+		
+		HashMap<Integer,Integer> sousId2Id = new HashMap<>();
+		
+		// On ajouter tous les modeles du sous arbre en retenant les ids
+		Iterator<Integer> iterSousArbre = sousArbre.id2modele.keySet().iterator();
+		while(iterSousArbre.hasNext()){
+			int sousId = iterSousArbre.next();
+			int id = addModele((Modele) DeepCopy.of(sousArbre.id2modele.get(sousId)));
+			sousId2Id.put(sousId, id);
+		}
+		
+		/* On met a jour les etats des parametres des modeles du sous arbre
+		 * 3 cas :
+		 * Cas 1 : lien vers un modele du sous arbre
+		 * Cas 2 : parametre du sous arbre lié a un modele de l'arbre
+		 * Cas 3 : parametre du sous arbre correspond à un parametre de l'arbre
+		 */
+		iterSousArbre = sousArbre.id2modele.keySet().iterator();
+		while(iterSousArbre.hasNext()){
+			int sousId=iterSousArbre.next();
+			int id = sousId2Id.get(sousId);
+			ArrayList<EtatParametre> sousParametres = sousArbre.parametres.get(sousId);
+			// L'indice du parametre iParam est le même pour l'arbre et le sous arbre
+			for(int iParam = 0;iParam<sousParametres.size();iParam++){
+				EtatParametre sousEtat = sousParametres.get(iParam);
+				EtatParametre etat = parametres.get(id).get(iParam);
+				// Cas 1 : lien vers un modele du sous arbre
+				if(sousEtat.isLien){
+					etat.setLien(sousId2Id.get(sousEtat.getIdLien()));
+				}
+				else{
+					int sousNumeroParam = sousEtat.getNumero();
+					EtatParametre etatSousArbre = parametres.get(idModele).get(sousNumeroParam);
+					// Cas 2 : parametre du sous arbre lié a un modele de l'arbre
+					if(etatSousArbre.isLien){
+						etat.setLien(etatSousArbre.getIdLien());
+					}
+					// Cas 3 : parametre du sous arbre correspond à un parametre de l'arbre
+					else{
+						etat.setNumero(etatSousArbre.getNumero());
+					}
+				}
+			}	
+		}
+		
+		// On modifie les liens vers idModele en lien vers la racine du sous arbre
+		int idSousRacine = sousId2Id.get(sousArbre.getRacine());
+		Iterator<Integer> iterArbre = id2modele.keySet().iterator();
+		while(iterArbre.hasNext()){
+			int id = iterArbre.next();
+			for(int iParam=0;iParam<parametres.get(id).size();iParam++){
+				EtatParametre etat = parametres.get(id).get(iParam);
+				if(etat.isLien && (etat.getIdLien()==idModele)){
+					etat.setLien(idSousRacine);
+				}
+			}
+		}
+		
+		if(idModele == idRacine){
+			setRacine(idSousRacine);
+		}
+		
+		// On supprime le modele sousArbre
+		supprModele(idModele);
+		
+		ArrayList<Integer> nouvellesId = new ArrayList<>();
+		iterSousArbre = sousArbre.id2modele.keySet().iterator();
+		while(iterSousArbre.hasNext()){
+			int sousId = iterSousArbre.next();
+			nouvellesId.add(sousId2Id.get(sousId));
+		}
+		return nouvellesId;
 	}
 	
 	
