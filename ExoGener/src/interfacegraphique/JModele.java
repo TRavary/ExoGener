@@ -17,10 +17,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import expression.modele.MEntier;
+import expression.modele.MEntierAlea;
 import expression.modele.MVariable;
 import expression.modele.Modele;
 
@@ -182,6 +184,41 @@ public class JModele extends JPanel {
 				}
 			});
 			menu.add(itemChangeNom);
+		}
+		
+		// ITEM : Modifier nom d'une variable
+		if(getModele().getClass().equals(MVariable.class)){
+			JMenuItem itemChangeNom = new JMenuItem("Modifier nom de variable");
+			itemChangeNom.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					String nouveauNom = JOptionPane.showInputDialog(null,"Entrez un nom de variable : ","Modifier nom de variable",JOptionPane.QUESTION_MESSAGE); 
+					((MVariable)getModele()).setNom(nouveauNom);
+					getModeleFactory().updateAllComponents();
+					
+				}
+			});
+			menu.add(itemChangeNom);
+		}
+		
+		// ITEM : Modifier Parametres Entier Aleatoire
+		if(getModele().getClass().equals(MEntierAlea.class)){
+			JMenuItem itemEntierAlea = new JMenuItem("Modifier plage de valeurs");
+			itemEntierAlea.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {
+					JTextField textMin = new JTextField();
+					JTextField textMax = new JTextField();
+					Object[] message = {"Valeur minimale :",textMin,
+							"Valeur maximale :",textMax
+					};
+					int option = JOptionPane.showConfirmDialog(null,message,"Modifier plage de valeurs",JOptionPane.OK_CANCEL_OPTION); 
+					if(option == JOptionPane.OK_OPTION){
+						((MEntierAlea)getModele()).setMin(Integer.valueOf(textMin.getText()));
+						((MEntierAlea)getModele()).setMax(Integer.valueOf(textMax.getText()));
+						getModeleFactory().updateAllComponents();
+					} 
+				}
+			});
+			menu.add(itemEntierAlea);
 		}
 		
 		// ITEM : Supprimer modele

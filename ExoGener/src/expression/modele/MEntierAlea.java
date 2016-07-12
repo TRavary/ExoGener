@@ -30,6 +30,13 @@ public class MEntierAlea extends Modele {
 	public MEntierAlea(){
 		this(1,9);
 	}
+
+	public void setMin(int min){
+		this.min = min;
+	}
+	public void setMax(int max){
+		this.max = max;
+	}
 	
 	public String getNom(){
 		StringBuilder result = new StringBuilder();
