@@ -38,13 +38,13 @@ public class FenetrePrincipale extends JFrame {
 	
 	public FenetrePrincipale(){
 	    this.setTitle("ExoGener");
-	    this.setSize(400, 500);
+	    this.setSize(800, 600);
 	    this.setLocationRelativeTo(null);
 	    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);             
 	    this.setVisible(true);
 	    this.setContentPane(jsp);	    
 	    
-	    
+	    jsp.setDividerLocation(160);
 	    jsp.setLeftComponent(feuilleFactory);
 	    jsp.setRightComponent(getModeleFactory());
 	    

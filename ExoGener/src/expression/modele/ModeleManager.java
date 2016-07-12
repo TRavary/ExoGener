@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.JMenu;
@@ -67,12 +68,12 @@ public class ModeleManager {
 		nomModeles.add(PATH+File.separator+nomModele);
 	}
 
-	public JMenu createMenuCreerModele(){
-		JMenu menuCreer = new JMenu("Creer Modele");
+	private Map<String,JMenuItem> createMenu(JMenu menu){
+		Map<String,JMenuItem> nomModele2item = new HashMap<>();
+		
 		Map<String,JMenu> rep2menu = new HashMap<>();   // table de correspondance "nom complet du repertoire -> menu correspondant"
-		rep2menu.put(PATH, menuCreer);
+		rep2menu.put(PATH, menu);
 		for(String nomModele : nomModeles){
-			
 			File fmodele = new File(nomModele);
 			
 			// cree les menus correspondants aux repertoires non encore rencontrés
@@ -93,25 +94,60 @@ public class ModeleManager {
 				repParents = repParents.getParentFile();
 			}
 			repParents = fmodele.getParentFile();
+			
 			JMenuItem itemModele = new JMenuItem(fmodele.getName());
 			itemModele.setName(nomModele);
-			itemModele.addActionListener(new ActionListener(){
-				@Override public void actionPerformed(ActionEvent e) {
-					
-					String nomModele = ((JMenuItem)e.getSource()).getName();
-					FP.getModeleFactory().addModele(newModele(nomModele));
-				}
-				
-			});
+			
+			nomModele2item.put(nomModele, itemModele);
+			
 			if(repParents == null){
-				menuCreer.add(itemModele);
+				menu.add(itemModele);
 			}
 			else{
 				rep2menu.get(repParents.getPath()).add(itemModele);
 			}
 		}
+		return nomModele2item;		
+	}
+	
+	
+	public JMenu createMenuCreerModele(){
+		JMenu menuCreer = new JMenu("Creer modele");
+		Map<String,JMenuItem> nomModele2item = createMenu(menuCreer);
+		
+		Iterator<String> iterNom = nomModele2item.keySet().iterator();
+		while(iterNom.hasNext()){
+			String nomModele = iterNom.next();
+			JMenuItem itemModele = nomModele2item.get(nomModele);
+			itemModele.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {	
+					String nomModele = ((JMenuItem)e.getSource()).getName();
+					FP.getModeleFactory().addModele(newModele(nomModele));
+				}
+				
+			});
+		}
 		return menuCreer;
 	}
+	
+	public JMenu createMenuCreerExercice(){
+		JMenu menuCreer = new JMenu("Creer exercice");
+		Map<String,JMenuItem> nomModele2item = createMenu(menuCreer);
+		
+		Iterator<String> iterNom = nomModele2item.keySet().iterator();
+		while(iterNom.hasNext()){
+			String nomModele = iterNom.next();
+			JMenuItem itemModele = nomModele2item.get(nomModele);
+			itemModele.addActionListener(new ActionListener(){
+				@Override public void actionPerformed(ActionEvent e) {	
+					String nomModele = ((JMenuItem)e.getSource()).getName();
+					FP.getFeuilleFactory().addExercice(newModele(nomModele));
+				}
+			});
+		}
+		return menuCreer;
+	}
+	
 	
 	
 	public void inserer(Modele modele, String nomModele) throws Exception{

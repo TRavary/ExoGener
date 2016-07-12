@@ -72,7 +72,7 @@ public class JModeleFactory extends JPanel {
 		addModele(modele);
 	}
 	
-	public JPopupMenu getPopupMenu(){
+	public JPopupMenu createPopupMenu(){
 		JPopupMenu popup = new JPopupMenu();
 		
 		// SOUS MENU : Creer
@@ -237,7 +237,7 @@ public class JModeleFactory extends JPanel {
 	        	popupX = e.getX();
 	        	popupY = e.getY();
 
-	        	getPopupMenu().show(e.getComponent(),
+	        	createPopupMenu().show(e.getComponent(),
 	                       e.getX(), e.getY());
 	        }
 	    }
