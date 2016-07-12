@@ -27,7 +27,6 @@ public class Produit extends Operateur {
 	public String toString(String destination){
 		if(destination.equals(Expression.destinationLatex)){
 			symbole ="\\times ";
-			
 		}
 		else {
 			symbole ="*";

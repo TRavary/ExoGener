@@ -15,7 +15,7 @@ public class Parametre extends Terme {
 	}
 	
 	public static String getString(int numero){
-		String result = "%";
+		String result = "param";
 		result = result.concat(String.valueOf(numero));
 		return result;
 	}

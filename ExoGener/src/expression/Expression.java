@@ -35,8 +35,8 @@ public abstract class Expression {
 	}
 	
 	public abstract String toString(String destination);
-	static String destinationLatex = "Latex";
-	static String destinationStandard = "Standard";
+	public static String destinationLatex = "Latex";
+	public static String destinationStandard = "Standard";
 
 	@Override 
 	public String toString()

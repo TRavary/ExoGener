@@ -1,5 +1,6 @@
 package interfacegraphique;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -8,17 +9,29 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
+import expression.Expression;
 import expression.modele.MArbre;
 import expression.modele.Modele;
+import outils.Pdf2Image;
 
 @SuppressWarnings("serial")
 public class JModeleFactory extends JPanel {
@@ -33,6 +46,8 @@ public class JModeleFactory extends JPanel {
 	JMenuItem itemGenererStandard = new JMenuItem("Generer Expression");
 	JMenuItem itemGenererLatex = new JMenuItem("Generer Latex");
 	JMenuItem itemAfficherLatex = new JMenuItem("Afficher arbre");
+	
+	JLabel exempleExpression = new JLabel();
 
 	int popupX = 10;
 	int popupY = 10;
@@ -60,7 +75,20 @@ public class JModeleFactory extends JPanel {
 	    itemGenererLatex.addActionListener(new GenererLatexListener());
 	    itemAfficherLatex.addActionListener(new AfficherListener());
 	    
-	    
+	    exempleExpression.setLocation(0,0);
+	    exempleExpression.setSize(300,100);
+	    exempleExpression.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 2, Color.black));
+	    exempleExpression.setBackground(Color.white);
+	    exempleExpression.setOpaque(true);
+	    exempleExpression.setAlignmentX(CENTER_ALIGNMENT);
+	    exempleExpression.addMouseListener(new MouseAdapter(){
+	    	@Override public void mousePressed(MouseEvent e) {
+	            if(SwingUtilities.isLeftMouseButton(e)){
+	            	updateExemple();
+	            }
+		    }
+	    });
+	    add(exempleExpression);
 	    
 	    addMouseListener(new PopupListener());
 	}
@@ -249,5 +277,97 @@ public class JModeleFactory extends JPanel {
 			addJModele(id);
 		}
 		supprJModele(idModele);
+	}
+	
+	public void updateExemple(){
+		String TEMP_DIRECTORY = "temp";
+        String TEMP_TEX_FILE_NAME = "Exemple"; // for New22.tex
+        String exemple = modelePrincipal.genererExpression().toString(Expression.destinationLatex);
+        // 1. Prepare the .tex file
+        String newLineWithSeparation = System.getProperty("line.separator")+System.getProperty("line.separator");
+        String math = "";
+        math += "\\documentclass[border=0.50001bp,convert={convertexe={imgconvert},outext=.png}]{standalone}" + newLineWithSeparation;
+        math += "\\usepackage{amsfonts}" + newLineWithSeparation;
+        math += "\\usepackage{amsmath}" + newLineWithSeparation;
+        math += "\\begin{document}" + newLineWithSeparation;
+        math += "\\begin{Huge}" + newLineWithSeparation;
+        math += "$"+exemple+"$"+ newLineWithSeparation;
+        math += "\\end{Huge}" + newLineWithSeparation;
+        math += "\\end{document}";
+
+        // 2. Create the .tex file
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(TEMP_DIRECTORY + "/" + TEMP_TEX_FILE_NAME + ".tex", false);
+            writer.write(math, 0, math.length());
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        // 3. Execute LaTeX from command line  to generate pdf
+        ProcessBuilder pb = new ProcessBuilder("pdflatex", "-shell-escape", TEMP_TEX_FILE_NAME + ".tex");
+        pb.directory(new File(TEMP_DIRECTORY));
+        try {
+            Process p = pb.start();
+            StreamPrinter fluxSortie = new StreamPrinter(p.getInputStream(), false);
+            StreamPrinter fluxErreur = new StreamPrinter(p.getErrorStream(), false);
+            new Thread(fluxSortie).start();
+            new Thread(fluxErreur).start();
+            p.waitFor();
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
+
+        // 4. Convert pdf to png
+        Pdf2Image.main(new String[] {TEMP_DIRECTORY + "/" +TEMP_TEX_FILE_NAME+".pdf",TEMP_DIRECTORY + "/" +TEMP_TEX_FILE_NAME});
+        
+        // 5. Display picture
+        ImageIcon img=new ImageIcon(TEMP_DIRECTORY + "/" + TEMP_TEX_FILE_NAME + ".png");
+        img.getImage().flush();
+        exempleExpression.setIcon(img);
+        updateAllComponents();
+        // 6. Delete files
+        
+         /*
+         for (File file : (new File(TEMP_DIRECTORY).listFiles())) {
+         
+            if (file.getName().startsWith(TEMP_TEX_FILE_NAME )) {
+                file.delete();
+            }
+        }*/
+        
+	}
+	
+	class StreamPrinter implements Runnable {
+
+	    // Source: http://labs.excilys.com/2012/06/26/runtime-exec-pour-les-nuls-et-processbuilder/
+	    private final InputStream inputStream;
+
+	    private boolean print;
+
+	    StreamPrinter(InputStream inputStream, boolean print) {
+	        this.inputStream = inputStream;
+	        this.print = print;
+	    }
+
+	    private BufferedReader getBufferedReader(InputStream is) {
+	        return new BufferedReader(new InputStreamReader(is));
+	    }
+
+	    @Override
+	    public void run() {
+	        BufferedReader br = getBufferedReader(inputStream);
+	        String ligne = "";
+	        try {
+	            while ((ligne = br.readLine()) != null) {
+	                if (print) {
+	                    System.out.println(ligne);
+	                }
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
 }

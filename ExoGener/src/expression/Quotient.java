@@ -30,11 +30,11 @@ public class Quotient extends Operateur {
 			Expression op0 = operandes.get(0);
 			if(op0.priorite<this.priorite){
 				result.append("(");
-				result.append(op0.toString());
+				result.append(op0.toString(destination));
 				result.append(")");
 			}
 			else{
-				result.append(op0.toString());
+				result.append(op0.toString(destination));
 			}
 			
 			Expression op1 = operandes.get(1);

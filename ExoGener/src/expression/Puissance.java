@@ -25,7 +25,7 @@ public class Puissance extends Operateur {
 			result.append(")");
 		}
 		else{
-			result.append(op0.toString());
+			result.append(op0.toString(destination));
 		}
 		
 		Expression op1 = operandes.get(1);
