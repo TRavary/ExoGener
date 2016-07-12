@@ -232,6 +232,8 @@ public class MArbre extends Modele {
 		 * Cas 1 : lien vers un modele du sous arbre
 		 * Cas 2 : parametre du sous arbre lié a un modele de l'arbre
 		 * Cas 3 : parametre du sous arbre correspond à un parametre de l'arbre
+		 * Rq : chaque parametre du sousArbre est devenu un nouveau parametre
+		 * on doit retablir le bon nombre de parametres en enlevant 1 pour chacun des parametres du sous arbre
 		 */
 		iterSousArbre = sousArbre.id2modele.keySet().iterator();
 		while(iterSousArbre.hasNext()){
@@ -240,6 +242,7 @@ public class MArbre extends Modele {
 			ArrayList<EtatParametre> sousParametres = sousArbre.parametres.get(sousId);
 			// L'indice du parametre iParam est le même pour l'arbre et le sous arbre
 			for(int iParam = 0;iParam<sousParametres.size();iParam++){
+				nbParametres-=1;
 				EtatParametre sousEtat = sousParametres.get(iParam);
 				EtatParametre etat = parametres.get(id).get(iParam);
 				// Cas 1 : lien vers un modele du sous arbre
