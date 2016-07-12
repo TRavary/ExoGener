@@ -23,6 +23,20 @@ public class Produit extends Operateur {
 		for(int i=0;i<ops.size();i++){operandes.add(ops.get(i));}
 	}
 
+	@Override
+	public String toString(String destination){
+		if(destination.equals(Expression.destinationLatex)){
+			symbole ="\\times ";
+			
+		}
+		else {
+			symbole ="*";
+		}
+		return super.toString(destination);
+	}
+	
+	
+	
 	public static void test(){
 		Entier deux = new Entier(2);
 		Entier m1 = new Entier(-1);
