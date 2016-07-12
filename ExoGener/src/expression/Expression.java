@@ -14,7 +14,7 @@ public abstract class Expression {
 	static int prioritePuissance = 7;
 	static int prioriteProduit = 5;
 	static int prioriteSomme = 1;
-	
+	static int prioriteEgalite = 0;
 	/* 10 -> Terme () fonctions
 	 * 9  ->
 	 * 8  -> 
@@ -25,7 +25,7 @@ public abstract class Expression {
 	 * 3  -> 
 	 * 2  -> 
 	 * 1  -> +  
-	 * 0  -> 
+	 * 0  -> =
 	 */
 	
 	public static void test(){

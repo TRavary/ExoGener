@@ -40,6 +40,7 @@ public class ModeleManager {
 		addBaseModele("Operations/Racine carrée",MRacine.class);
 		addBaseModele("Divers/Parenthèses",MParenthese.class);
 		addBaseModele("Divers/Liste",MListe.class);
+		addBaseModele("Divers/Egalite", MEgalite.class);
 		
 		importModelesFrom(new File(PATH));
 	}

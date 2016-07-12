@@ -26,6 +26,8 @@ public class FenetrePrincipale extends JFrame {
 	ModeleManager modeleManager = new ModeleManager();
 	FeuilleExercice feuilleExercice = new FeuilleExercice();
 	
+	String feuillePATH = "tex/feuilleExercice/";
+		
 	JMenuBar menuBar = new JMenuBar();
 	JMenu menuOutils = new JMenu("Outils");
 	JMenu menuFeuille = new JMenu("Feuille d'exercice");
@@ -116,7 +118,7 @@ public class FenetrePrincipale extends JFrame {
 			latex = feuilleExercice.genererLatex();
 		} catch (IOException e1) {e1.printStackTrace();}
 		try {
-			PrintWriter out = new PrintWriter(nomFichier+".tex");
+			PrintWriter out = new PrintWriter(feuillePATH+nomFichier+".tex");
 			out.println(latex);
 			out.close();
 		} catch (FileNotFoundException e1) {e1.printStackTrace();}
@@ -126,8 +128,8 @@ public class FenetrePrincipale extends JFrame {
 		Runtime runtime = Runtime.getRuntime();
 		final Process process;
 		try {
-			//process = new ProcessBuilder("pdflatex","-synctex=1 -interaction=nonstopmode "+nomFichier+".tex").start();
-			process = runtime.exec(new String[] {"pdflatex", "-synctex=1","-interaction=nonstopmode",nomFichier+".tex"});
+			//process = new ProcessBuilder("pdflatex","-synctex=1 -interaction=nonstopmode "+feuillePATH+nomFichier+".tex").start();
+			process = runtime.exec(new String[] {"pdflatex", "-synctex=1","-interaction=nonstopmode",feuillePATH+nomFichier+".tex"});
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -183,7 +185,7 @@ public class FenetrePrincipale extends JFrame {
 	void ouvrirPDF(String nomFichier){
 		final Process process;
 		try {
-			process = new ProcessBuilder("C:/Program Files (x86)/Adobe/Reader 10.0/Reader/AcroRd32.exe", nomFichier+".pdf").start();
+			process = new ProcessBuilder("C:/Program Files (x86)/Adobe/Reader 10.0/Reader/AcroRd32.exe", feuillePATH+nomFichier+".pdf").start();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
