@@ -327,15 +327,16 @@ public class JModeleFactory extends JPanel {
         img.getImage().flush();
         exempleExpression.setIcon(img);
         updateAllComponents();
-        // 6. Delete files
         
-         /*
+        /*
+        // 6. Delete files
          for (File file : (new File(TEMP_DIRECTORY).listFiles())) {
          
             if (file.getName().startsWith(TEMP_TEX_FILE_NAME )) {
                 file.delete();
             }
-        }*/
+        }
+        */
         
 	}
 	
