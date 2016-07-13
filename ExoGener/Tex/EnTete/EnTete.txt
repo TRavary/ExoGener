@@ -1,0 +1,27 @@
+\documentclass{article}
+
+\usepackage[centertags]{amsmath}
+\usepackage{tasks,amsmath,amssymb,makeidx}
+\usepackage{amsfonts}
+\usepackage{epsfig}
+\usepackage[francais]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+%%***************************************************************************************
+%% \input{NewCommands.tex}
+%% \everymath{\displaystyle}
+%%***************************************************************************************
+
+\setlength{\topmargin}{-3.2cm} \setlength{\textheight}{270mm}
+\setlength{\textwidth}{194mm} \setlength{\oddsidemargin}{-18mm}
+
+\newcounter{cexercice}
+\setcounter{cexercice}{0}
+
+
+\newenvironment{exo}{
+\stepcounter{cexercice}
+{\bfseries \underline{Exercice \arabic{cexercice} :}}
+}{}
+
+\begin{document}
